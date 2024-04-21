@@ -1,11 +1,7 @@
 import json
-import uvicorn
-import ngrok
 import os
-import requests
 
 from dotenv import load_dotenv
-from icecream import ic
 from aiohttp import ClientSession
 from fastapi import FastAPI, Request, APIRouter
 from sqlalchemy.orm import Session
@@ -24,10 +20,10 @@ load_dotenv()
 
 class TelegramBot:
 
-    def __init__(self, TG_API, SEND_MESSAGE_URL, SEND_PHOTO_URL) -> None:
-        self.TG_API = TG_API
-        self.SEND_MESSAGE_URL = SEND_MESSAGE_URL
-        self.SEND_PHOTO_URL = SEND_PHOTO_URL
+    def __init__(self, API_key: str) -> None:
+        self.TG_API = API_key
+        self.SEND_MESSAGE_URL = os.getenv("SEND_MESSAGE_URL")
+        self.SEND_PHOTO_URL = os.getenv("SEND_PHOTO_URL")
 
 
     async def send_start_message(self, request):
@@ -137,10 +133,21 @@ class TelegramBot:
         return await self.send_bot_message(data)
 
 
-    async def send_message(self, request: BotUpdateModel, message: str):
+    async def send_message(self, chat_id: int, message: str):
         data = {
-            'chat_id': request.message.from_tg.chat_id,
+            'chat_id': chat_id,
             'text': message
         }
         await self.send_bot_message(data)
+
+
+    async def send_message_to_reply(self, chat_id: int, message: str, placeholder: str):
+        force_reply = {"force_reply": True, "input_field_placeholder": placeholder, "selective": True}
+        force_reply_json = json.dumps(force_reply)
+        data = {
+            'chat_id': chat_id,
+            'text': message,
+            "reply_markup": force_reply_json,
+        }       
+        return await self.send_bot_message(data)
         

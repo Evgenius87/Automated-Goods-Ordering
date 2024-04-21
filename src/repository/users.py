@@ -29,6 +29,8 @@ async def patch_user(body: UsersResponseModel, db: Session):
         user.email = body.email
     if body.information:
         user.information = body.information
+    if body.forward_provider_message:
+        user.forward_provider_message = body.forward_provider_message
     db.commit()
     return user
 

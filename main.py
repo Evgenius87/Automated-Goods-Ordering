@@ -22,7 +22,8 @@ from src.routes import (bot_actions,
 
 
 load_dotenv()
-TG_API = os.getenv("BOT_TOKEN")
+TG_API_KEY_FOR_USERS = os.getenv("BOT_TOKEN")
+TG_API_KEY_FOR_PROVIDERS = os.getenv("BOT_TOKEN")
 
 app = FastAPI()
 header = Header({"ngrok-skip-browser-warning": True})
@@ -61,7 +62,7 @@ app.include_router(providers.router, prefix="/api")
 
 
 
-TELEGRAM_SET_WEBHOOK_URL = f"https://api.telegram.org/bot{TG_API}/setWebhook" #?url=https://{whook}/api/bot_actions/webhook
+TELEGRAM_SET_WEBHOOK_URL = f"https://api.telegram.org/bot{TG_API_KEY_FOR_USERS}/setWebhook" #?url=https://{whook}/api/bot_actions/webhook
 
 
 @app.get('/hello/', status_code=status.HTTP_200_OK)
@@ -78,9 +79,10 @@ async def request(url: str):#, payload: dict, debug: bool = False):
         return request
 
 async def set_telegram_webhook_url() -> bool:
-    payload = {"url": f"{HOST_URL}/webhook/?url=https://{TG_API}/api/bot_actions/webhook"}
-    req = await request(f"https://api.telegram.org/bot{TG_API}/setWebhook?url={HOST_URL}/api/bot_actions/webhook")#TELEGRAM_SET_WEBHOOK_URL, payload)
-    return req.status_code == 200
+    payload = {"url": f"{HOST_URL}/webhook/?url=https://{TG_API_KEY_FOR_USERS}/api/bot_actions/webhook"}
+    req_to_users = await request(f"https://api.telegram.org/bot{TG_API_KEY_FOR_USERS}/setWebhook?url={HOST_URL}/api/bot_actions/webhook/to_users")#TELEGRAM_SET_WEBHOOK_URL, payload)
+    req_to_providefs = await request(f"https://api.telegram.org/bot{TG_API_KEY_FOR_PROVIDERS}/setWebhook?url={HOST_URL}/api/bot_actions/webhook/to_providers")
+    return req_to_users.status_code == 200
 
 
 

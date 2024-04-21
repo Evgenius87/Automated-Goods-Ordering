@@ -1,17 +1,12 @@
-import json
-import uvicorn
-import ngrok
+
 import os
 
-from icecream import ic
+
 from dotenv import load_dotenv
 
 from aiohttp import ClientSession
 from sqlalchemy.orm import Session
 from fastapi import FastAPI, Request, APIRouter, Depends, HTTPException, status
-from aiogram import Bot, Dispatcher
-
-from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
 
 from src.database.db_connection import get_db
 from src.schemas import BotUpdateModel, OkResponseModel
@@ -25,11 +20,17 @@ load_dotenv()
 TG_API = os.getenv("BOT_TOKEN")
 
 
-@router.post('/webhook', response_model=OkResponseModel)
+@router.post('/webhook/to_users', response_model=OkResponseModel)
 async def root(obj: BotUpdateModel, db: Session = Depends(get_db)):
     bot_handler_chain = await bot_request_handler_chain()
     response = await bot_handler_chain.handle_request(obj, db)
-    ic(response)
+    return {'message': 'ok'}
+
+
+@router.post('/webhook/to_providers', response_model=OkResponseModel)
+async def root(obj: BotUpdateModel, db: Session = Depends(get_db)):
+    bot_handler_chain = await bot_request_handler_chain()
+    response = await bot_handler_chain.handle_request(obj, db)
     return {'message': 'ok'}
     
 
