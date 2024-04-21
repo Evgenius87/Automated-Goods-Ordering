@@ -153,6 +153,8 @@ class User(Base):
     banned = Column(Boolean, default=False)
     role = Column('role', Enum(Role), default=Role.user)
     information = Column(String, nullable=True)
+    forward_provider_message = Column(Boolean, default=False)
+    provider = relationship("Provider", back_populates="user")
 
 
 class Provider(Base):
@@ -161,27 +163,29 @@ class Provider(Base):
     provider_name = Column(String(200), nullable=True)
     salesman_name = Column(String(200), nullable=True)
     salesman_phone = Column(BIGINT)
+    salesman_email = Column(String(100))
     username = Column(String(150), nullable=True)
     first_name = Column(String(150), nullable=True)
     last_name = Column(String(150), nullable=True)
     chat_id = Column(BIGINT, unique=True)
     ingredients = relationship('Ingrdient', back_populates='provider')
-    # info = Column(String(255), nullable=True)
+    user_id = Column(Integer, ForeignKey('users.id'))
+    user = relationship("User", back_populates="provider")
 
 
-class Client(Base):
-    __tablename__ = "clients"
-    id = Column(Integer, primary_key=True)
-    first_name = Column(String(150), nullable=True)
-    last_name = Column(String(150), nullable=True)
-    phone= Column(Integer, unique=True)
-    birthday = Column(DateTime)
-    discount = Column(Integer)
-    email = Column(String(100))
-    password = Column(String(255), nullable=False)
-    created_at = Column('created_at', DateTime, default=func.now())
-    refresh_token = Column(String(255))
-    information = Column(String, nullable=True)
+# class Client(Base):
+#     __tablename__ = "clients"
+#     id = Column(Integer, primary_key=True)
+#     first_name = Column(String(150), nullable=True)
+#     last_name = Column(String(150), nullable=True)
+#     phone= Column(Integer, unique=True)
+#     birthday = Column(DateTime)
+#     discount = Column(Integer)
+#     email = Column(String(100))
+#     password = Column(String(255), nullable=False)
+#     created_at = Column('created_at', DateTime, default=func.now())
+#     refresh_token = Column(String(255))
+#     information = Column(String, nullable=True)
 
 
 

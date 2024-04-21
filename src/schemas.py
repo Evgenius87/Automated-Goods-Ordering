@@ -16,7 +16,7 @@ class FromTG(BaseModel):
     language_code: str 
 
 
-class BotMessage(BaseModel):
+class ReplyMessage(BaseModel):
     message_id: int
     from_tg: FromTG = Field(alias='from')
     chat: dict
@@ -24,10 +24,18 @@ class BotMessage(BaseModel):
     text: str
 
 
+class BotMessage(BaseModel):
+    message_id: int = None
+    from_tg: FromTG = Field(alias='from')
+    chat: dict = None
+    date: int = None
+    text: str = None
+    reply_to_message: Optional[ReplyMessage] = None
+
+
 class BotUpdateModel(BaseModel):
-    
     update_id: int
-    message:BotMessage  
+    message:BotMessage = None
 
 
 class ReplyKeyboardMarkup(BaseModel):
@@ -247,6 +255,7 @@ class UsersResponseModel(BaseModel):
     email: str
     information: str
     role: str
+    forward_provider_message: bool
 
 class UserModel(BaseModel):
     username: str

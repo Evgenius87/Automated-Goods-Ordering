@@ -1,5 +1,6 @@
+import os
+
 from dotenv import load_dotenv
-from icecream import ic
 from aiohttp import ClientSession
 from aiohttp import ClientSession
 from fastapi import FastAPI, Request, APIRouter
@@ -10,7 +11,10 @@ from src.database.models import Dish, User, Category
 from src.services.telegram_bot import TelegramBot
 from src.services.bot_exceptions import bot_exceptions
 
-bot = TelegramBot()
+load_dotenv()
+TG_API = os.getenv("BOT_TOKEN")
+
+bot = TelegramBot(TG_API)
 
 @bot_exceptions
 async def get_current_user(request: BotUpdateModel, db: Session) -> User:
@@ -26,7 +30,7 @@ async def bot_start(request: BotUpdateModel, db: Session) -> dict:
 
 @bot_exceptions
 async def send_message(request: BotUpdateModel, text: str) -> dict:
-    return await bot.send_message(request, text)
+    return await bot.send_message(request.message.from_tg.chat_id, text)
 
 @bot_exceptions
 async def create_new_user(request: BotUpdateModel, db: Session) -> dict:
@@ -40,7 +44,7 @@ async def create_new_user(request: BotUpdateModel, db: Session) -> dict:
     db.add(user)
     db.commit()
     message = f'вітаю, {user.first_name} {user.last_name}, регістрація пройшла успішно'
-    await bot.send_message(request, message)
+    await bot.send_message(request.message.from_tg.chat_id, message)
     return await bot.send_home(request)
 
 @bot_exceptions
@@ -55,7 +59,7 @@ async def admin_registration(request: BotUpdateModel, db: Session) -> dict:
     db.add(user)
     db.commit()
     message = f'вітаю, {request.message.from_tg.first_name} {request.message.from_tg.last_name}, регістрація пройшла успішно'
-    await bot.send_message(request, message)
+    await bot.send_message(request.message.from_tg.chat_id, message)
     return await bot.send_home(request)
 
 @bot_exceptions
@@ -123,6 +127,10 @@ async def del_dish_from_stoplist(request: BotUpdateModel, db: Session) -> dict:
     dish = db.query(Dish).filter(Dish.dish_name == dish_name).first()
     dish.stop_list = False
     db.commit()
+    return await bot.send_home(request)
+
+@bot_exceptions
+async def send_home(request: BotUpdateModel):
     return await bot.send_home(request)
 
 

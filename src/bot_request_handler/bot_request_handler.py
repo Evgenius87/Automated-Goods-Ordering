@@ -1,7 +1,6 @@
 import os
 
 from dotenv import load_dotenv
-from icecream import ic
 from abc import ABC, abstractmethod
 from fastapi import Depends
 from sqlalchemy.orm import  Session
@@ -9,12 +8,13 @@ from sqlalchemy.orm import  Session
 from src.schemas import BotMessage, BotUpdateModel
 from src.database.models import Dish, Category, User, Role
 from src.database.db_connection import get_db
-from src.repository import bot_contents
+from src.repository import bot_contents, providers
 from src.services.chat_gpt import Gpt
 
 
 load_dotenv()
 admin_secret = os.getenv('ADMIN_SECRET')
+
 
 class AbstractHandler(ABC):
     """
@@ -144,12 +144,43 @@ class UnknownCommand(AbstractHandler):
     async def handle_request(self, request: BotUpdateModel, db: Session = Depends(get_db)):
         if request.message.text:
             content = request.message.text
-            gpt = Gpt(content)
-            message = gpt.get_answer()
-            await bot_contents.send_message(request=request, message=message)
+            # gpt = Gpt(content)
+            # message = gpt.get_answer()
+            await bot_contents.send_message(request=request, message=content)
             return await bot_contents.send_home(request)
         elif hasattr(self, "next_handler"):
             await self._next_handler.handle_request(request, db)
+
+class HelloProvider(AbstractHandler):
+    async def handle_request(self, request: BotUpdateModel, db: Session):
+        if request.message.text == '/start':
+            return await providers.start_message(request, db)
+        elif hasattr(self, "next_handler"):
+            await self._next_handler.handle_request(request, db)
+
+
+class InfoProvider(AbstractHandler):
+    async def handle_request(self, request: BotUpdateModel, db: Session):
+        if request.message.reply_to_message.text:
+            if request.message.reply_to_message.text == providers.INPUT_NAME:
+                return await providers.save_provider_name(request, db)
+            if request.message.reply_to_message.text == providers.INPUT_COMPANY_NAME:
+                return await providers.save_provider_company(request, db)
+            if request.message.reply_to_message.text == providers.INPUT_PHONE:
+                return await providers.save_provider_phone(request, db)
+            if request.message.reply_to_message.text == providers.INPUT_EMAIL:
+                return await providers.save_provider_email(request, db)
+        elif hasattr(self, "next_handler"):
+            await self._next_handler.handle_request(request, db)
+
+
+class EchoToManager(AbstractHandler):
+    async def handle_request(self, request: BotUpdateModel, db: Session):
+        if request.message.text:
+            return await providers.forward_message_to_admin(request, db)
+        elif hasattr(self, "next_handler"):
+            await self._next_handler.handle_request(request, db)
+
 
 async def bot_request_handler_chain():
 

@@ -17,10 +17,9 @@ load_dotenv()
 
 
 TG_API = os.getenv("BOT_TOKEN")
-SEND_MESSAGE_URL = os.getenv("SEND_MESSAGE_URL")
-SEND_PHOTO_URL = os.getenv("SEND_PHOTO_URL")
 
-telegram_bot = TelegramBot(TG_API, SEND_MESSAGE_URL, SEND_PHOTO_URL)
+
+telegram_bot = TelegramBot(TG_API)
 
 
 async def get_all_ingredients(db: Session) -> list[Ingredient]:
@@ -119,11 +118,7 @@ async def send_order_to_provider(body: list[OrederIngByProvider], db: Session):
             ing_order = ing.order
             msg = f"{ing_name} - {ing_order}/n"
             message += msg
-        data = {
-            "chat_id": chat_id,
-            "text": message
-        }
-        await telegram_bot.send_bot_message(data)
+        await telegram_bot.send_message(chat_id, message)
     return {"Message": "The order has been sent successfully"}
 
 
