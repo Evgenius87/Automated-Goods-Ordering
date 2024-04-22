@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from fastapi import status, HTTPException
 from sqlalchemy.orm import Session
 
-from src.schemas import OrederIngByProvider, IngredientResponseModel
+from src.schemas import OrederIngByProvider, IngredientResponseModel, BotUpdateModel
 from src.database.models import Dish, Tag, Category, User, Ingredient, Provider
 from src.services.resto_stock_balanse import  IikoAPIHandler
 from src.services.telegram_bot import TelegramBot
@@ -119,6 +119,11 @@ async def send_order_to_provider(body: list[OrederIngByProvider], db: Session):
             msg = f"{ing_name} - {ing_order}/n"
             message += msg
         await telegram_bot.send_message(chat_id, message)
+        req = BotUpdateModel()
+        req.message.from_tg.chat_id = chat_id
+        req.message.text = ''
+        data = await telegram_bot.make_bot_buttons(["Замовлення прийнято"])
+        await telegram_bot.send_bot_message(data)
     return {"Message": "The order has been sent successfully"}
 
 
