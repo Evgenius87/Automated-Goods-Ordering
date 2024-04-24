@@ -1,4 +1,4 @@
-from icecream import ic
+
 
 
 def bot_exceptions(func):

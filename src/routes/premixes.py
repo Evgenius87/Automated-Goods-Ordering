@@ -12,7 +12,7 @@ from src.repository import dishes, premixes
 from src.services.images import image_cloudinary, resize_image
 
 
-router = APIRouter(prefix='/premixes')
+router = APIRouter(prefix='/premixes', tags=["Premixes"])
 
 
 

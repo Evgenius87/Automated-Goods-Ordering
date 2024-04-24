@@ -13,7 +13,7 @@ from src.services.images import image_cloudinary, resize_image
 import src
 
 
-router = APIRouter(prefix='/tags')
+router = APIRouter(prefix='/tags', tags=["Tags"])
 
 
 @router.get("/", response_model=list[TagResponseModel], status_code=status.HTTP_200_OK)

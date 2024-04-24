@@ -1,6 +1,5 @@
 from fastapi import status, HTTPException
 from sqlalchemy.orm import Session
-from icecream import ic
 
 from src.schemas import DishModel
 from src.database.models import Dish, Tag, Category, User

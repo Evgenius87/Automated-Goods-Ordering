@@ -14,7 +14,7 @@ from src.repository.tags import find_tags
 load_dotenv()
 
 
-TG_API = os.getenv("BOT_TOKEN")
+TG_API = os.getenv("BOT_TOKEN_PRO")
 
 INPUT_NAME = "Введіть своє ім'я"
 INPUT_COMPANY_NAME = "Введіть назву компанії"

@@ -8,7 +8,7 @@ from src.repository import categories
 from src.database.models import Category
 
 
-router = APIRouter(prefix='/categories')
+router = APIRouter(prefix='/categories', tags=["Categories"])
 
 @router.get('/get_children/{name}', response_model=list[GetChildRequest])
 async def get_children_by_name(name: str, db: Session = Depends(get_db)):

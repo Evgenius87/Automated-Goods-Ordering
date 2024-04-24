@@ -9,7 +9,7 @@ from src.schemas import BotMessage, BotUpdateModel
 from src.database.models import Dish, Category, User, Role
 from src.database.db_connection import get_db
 from src.repository import bot_contents, providers
-from src.services.chat_gpt import Gpt
+# from src.services.chat_gpt import Gpt
 
 
 load_dotenv()
@@ -211,6 +211,18 @@ async def bot_request_handler_chain():
 
     return start_handler
 
+
+async def providers_bot_request_handler_chain():
+
+    hello_provider = HelloProvider()
+    info_provider = InfoProvider()
+    echo_manager = EchoToManager()
+
+    hello_provider.set_next(info_provider)
+    info_provider.set_next(echo_manager)
+    echo_manager.set_next(hello_provider)
+
+    return hello_provider
 
 
 

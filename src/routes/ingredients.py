@@ -12,7 +12,7 @@ from src.repository import dishes, ingredients
 from src.services.images import image_cloudinary, resize_image
 
 
-router = APIRouter(prefix='/ingredients')
+router = APIRouter(prefix='/ingredients', tags=["Ingredients"])
 
 
 
