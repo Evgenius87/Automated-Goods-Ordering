@@ -6,7 +6,7 @@ from fastapi.security import OAuth2PasswordRequestForm, HTTPAuthorizationCredent
 from sqlalchemy.orm import Session
 from PIL import Image
 
-from src.schemas import CommentResponeModel, CommentModel, CommentModelUpdate
+from src.schemas import CommentResponeModel, CommentModel
 from src.database.db_connection import get_db
 from src.database.models import Dish, Category, User
 from src.repository import comments as repository_comments
@@ -15,12 +15,12 @@ from src.repository import comments as repository_comments
 
 
 
-router = APIRouter(prefix='/comments', tags=["comments"])
+router = APIRouter(prefix='/comments', tags=["Comments"])
 
 security = HTTPBearer()
 
 
-@router.get('/', response_model=list[CommentResponeModel], dependencies=[Depends(access_A)])
+@router.get('/', response_model=list[CommentResponeModel])
 async def get_comments(db: Session = Depends(get_db)):
     comments = await repository_comments.get_comments(db)
     return comments
@@ -35,9 +35,8 @@ async def get_comments(db: Session = Depends(get_db)):
 #     return comment
 
 
-@router.get('/{comment_id}', response_model=CommentResponse)
-async def get_comment_by_id(comment_id: int = Path(ge=1), db: Session = Depends(get_db),
-                            _: User = Depends(auth_service.get_current_user)):
+@router.get('/{comment_id}', response_model=CommentResponeModel)
+async def get_comment_by_id(comment_id: int = Path(ge=1), db: Session = Depends(get_db),):
     comment = await repository_comments.get_comment_by_id(comment_id, db)
     if not comment:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No such comment")

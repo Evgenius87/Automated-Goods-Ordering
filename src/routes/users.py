@@ -9,7 +9,7 @@ from src.database.db_connection import get_db
 from src.repository import users as reposetory_users
 from src.database.models import User
 
-router = APIRouter(prefix='/users')
+router = APIRouter(prefix='/users', tags=["Users"])
 
 
 @router.get("/", response_model=list[UsersResponseModel])

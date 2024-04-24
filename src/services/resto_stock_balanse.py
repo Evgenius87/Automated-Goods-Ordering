@@ -149,9 +149,9 @@ class IikoAPIHandler:
         return products
 
 
-iiko_server = IikoAPIHandler()
-storage_balance = iiko_server.get_storage_balance()
-print(storage_balance)
+# iiko_server = IikoAPIHandler()
+# storage_balance = iiko_server.get_storage_balance()
+# print(storage_balance)
 
 
 

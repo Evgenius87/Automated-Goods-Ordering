@@ -126,7 +126,7 @@ class Comment(Base):
     comment = Column(String(955), nullable=False)
     user_id = Column("user_id", ForeignKey('users.id', ondelete='CASCADE'), default=None)
     username = relationship("User", backref="comments")
-    dish_id = Column("dish_id", ForeignKey("dich.id", ondelete="CASCADE"), default=None)
+    dish_id = Column("dish_id", ForeignKey("dishes.id", ondelete="CASCADE"), default=None)
     created_at = Column("created_at", DateTime, default=func.now())
     updated_at = Column("updated_at", DateTime, default=func.now(), onupdate=func.now())
 

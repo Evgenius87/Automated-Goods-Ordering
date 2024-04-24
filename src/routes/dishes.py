@@ -12,7 +12,7 @@ from src.repository import dishes, bot_contents
 from src.services.images import image_cloudinary, resize_image
 
 
-router = APIRouter(prefix='/dishes')
+router = APIRouter(prefix='/dishes', tags=["Dishes"])
 
 
 @router.get('/{dish_id}', response_model=DishResponseModel)
