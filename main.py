@@ -23,7 +23,7 @@ from src.routes import (bot_actions,
 
 load_dotenv()
 TG_API_KEY_FOR_USERS = os.getenv("BOT_TOKEN")
-TG_API_KEY_FOR_PROVIDERS = os.getenv("BOT_TOKEN")
+TG_API_KEY_FOR_PROVIDERS = os.getenv("BOT_TOKEN_PRO")
 
 app = FastAPI()
 header = Header({"ngrok-skip-browser-warning": True})

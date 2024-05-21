@@ -1,47 +1,56 @@
 from fastapi import status, HTTPException
 from sqlalchemy.orm import Session
+from pprint import pprint
 
-
-from src.schemas import PremixModel, PremixResponseModel
-from src.database.models import Dish, Tag, Category, User, Ingredient,Premix
+from src.schemas import PremixModel, PremixResponseModel, IngredientModel
+from src.database.models import Ingredient, Premix, Premix_M2M_Ingredient
 from src.services.images import image_cloudinary
 from src.repository.tags import find_tags
 
 
 async def get_all_premixes(db: Session) -> list[Premix]:
-    premixes = db.query(Premix).all()
+    premixes = db.query(Premix).all()   
+    db.commit()
     return premixes
 
 
-async def get_premix(id: int, db: Session) -> Premix:
-    premix = db.query(Premix).filter(Premix.id==id).first()
-    premix_response = PremixResponseModel(
-        name=premix.name,
-        description=premix.description,
-        ingredients=[{"id": ingredient.id, "quantity": relationship.quantity} for ingredient, relationship in premix.ingredients]
-    )
-    return premix_response
+
+async def get_premix(id: int, db: Session) -> PremixResponseModel:
+    premix = db.query(Premix).filter(Premix.id == id).first()
+    return premix
 
 
-async def create_premix(body: PremixModel, db: Session) -> Premix:
-    premix_data = body.dict(exclude_unset=True)
-    ingredients_data = premix_data.pop('ingredients', [])
-    new_premix = Premix(**premix_data)
-    
-    if ingredients_data:
-        for ingredient_data in ingredients_data:
-            ingredient = db.query(Ingredient).filter_by(id=ingredient_data['id']).first()
-            quantity = ingredient_data.get('quantity')
-            new_premix.ingredients.append(ingredient, {'quantity': quantity})
-    
+
+async def create_premix(body: PremixModel, db: Session):
+    # Створення нового премікса
+    new_premix = Premix(name=body.name, description=body.description)
     db.add(new_premix)
+    db.commit()
+    db.refresh(new_premix)
+
+    # Додавання інгредієнтів і кількостей до премікса
+    for ingredient_detail in body.ingredients:
+        ingredient = db.query(Ingredient).filter(Ingredient.id == ingredient_detail.id).first()
+        if not ingredient:
+            raise HTTPException(status_code=404, detail=f"Ingredient with ID {ingredient_detail.id} not found")
+        
+        # Створення m2m зв'язку з кількістю
+        premix_ingredient = Premix_M2M_Ingredient(
+            premix_id=new_premix.id,
+            ingredient_id=ingredient.id,
+            quantity=ingredient_detail.quantity
+        )
+        db.add(premix_ingredient)
     db.commit()
     db.refresh(new_premix)
     return new_premix
 
 
-async def delete_premix(id: int, db: Session):
-    premix = db.query(Premix).filter(Premix.id == id).first()
+async def delete_premix(prem_id: int, db: Session):
+    premix = db.query(Premix).filter(Premix.id == prem_id).first()
+    prem_m2m_ing = db.query(Premix_M2M_Ingredient).filter(Premix_M2M_Ingredient.premix_id == prem_id).all()
     db.delete(premix)
+    for obj in prem_m2m_ing:
+        db.delete(obj)
     db.commit()
     return {"message": "Premix successfuly deleted"}

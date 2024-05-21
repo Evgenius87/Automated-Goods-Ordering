@@ -21,32 +21,35 @@ dish_m2m_tag = Table(
     Column("tag_id", Integer, ForeignKey("tags.id", ondelete="CASCADE")),
 )
 
-dish_m2m_ingredient = Table(
-    'dish_m2m_ingredient', 
-    Base.metadata,
-    Column("id", Integer, primary_key=True),
-    Column('dish_id', Integer, ForeignKey('dishes.id', ondelete="CASCADE")),
-    Column('ingredient_id', Integer, ForeignKey('ingredients.id', ondelete="CASCADE")),
-    Column('quantity', Float) 
-                          )
 
-dish_m2m_premix = Table(
-    'dish_m2m_premix', 
-    Base.metadata,
-    Column("id", Integer, primary_key=True),
-    Column('dish_id', Integer, ForeignKey('dishes.id', ondelete="CASCADE")),
-    Column('premix_id', Integer, ForeignKey('premixes.id', ondelete="CASCADE")),
-    Column('quantity', Float) 
-                          )
+class Dish_M2M_Ingredients(Base):
+    __tablename__ = "dish_m2m_ingredient"
+    id = Column(Integer, primary_key=True)
+    dish_id = Column(Integer, ForeignKey("dishes.id", ondelete="CASCADE"))
+    ingredient_id = Column(Integer, ForeignKey("ingredients.id", ondelete="CASCADE"))
+    quantity = Column(Float)
+    dish = relationship("Dish", back_populates="dish_ingredients")
+    ingredient = relationship("Ingredient", back_populates="ingredient_dishes")
 
-premix_m2m_ingredient = Table(
-    'premix_m2m_ingredient', 
-    Base.metadata,
-    Column("id", Integer, primary_key=True),
-    Column('premix_id', Integer, ForeignKey('premixes.id', ondelete="CASCADE")),
-    Column('ingredient_id', Integer, ForeignKey('ingredients.id', ondelete="CASCADE")),
-    Column('quantity', Float) 
-                          )
+
+class Dish_M2M_Premixes(Base):
+    __tablename__ = "dish_m2m_premix"
+    id = Column(Integer, primary_key=True)
+    dish_id = Column(Integer, ForeignKey("dishes.id", ondelete="CASCADE"))
+    premix_id = Column(Integer, ForeignKey("premixes.id", ondelete="CASCADE"))
+    quantity = Column(Float)
+    dish = relationship("Dish", back_populates="dish_premixes")
+    premix = relationship("Premix", back_populates="premix_dishes")
+
+
+class Premix_M2M_Ingredient(Base):
+    __tablename__ = 'premix_m2m_ingredient'
+    id = Column(Integer, primary_key=True)
+    premix_id = Column(Integer, ForeignKey('premixes.id', ondelete="CASCADE"))
+    ingredient_id = Column(Integer, ForeignKey('ingredients.id', ondelete="CASCADE"))
+    quantity = Column(Float) 
+    premix = relationship("Premix", back_populates="premix_ingredients")
+    ingredient = relationship("Ingredient", back_populates="ingredient_premixes")
 
 
 class Dish(Base):
@@ -56,12 +59,12 @@ class Dish(Base):
     image_public_id = Column(String(255))
     dish_name = Column(String(200), unique=True)
     description = Column(String(900))
-    ingredients =  relationship("Ingredient", secondary=dish_m2m_ingredient, back_populates="dishes")
-    premixes =  relationship("Premix", secondary=dish_m2m_premix, back_populates="dishes")
+    dish_ingredients = relationship("Dish_M2M_Ingredients", back_populates="dish")
+    dish_premixes = relationship("Dish_M2M_Premixes", back_populates="dish")
     comments = relationship('Comment', backref="dishes")
-    # user_id = Column('user_id', ForeignKey('users.id', ondelete='CASCADE'), default=None)
     tags = relationship("Tag", secondary=dish_m2m_tag, back_populates="dishes")
     stop_list = Column(Boolean)
+    runing_out = Column(Boolean)
     need_to_sold = Column(Boolean)
     price = Column(Integer)
     created_at = Column("created_at", DateTime, default=func.now())
@@ -73,19 +76,20 @@ class Dish(Base):
 class Ingredient(Base):
     __tablename__ = "ingredients"
     id = Column(Integer, primary_key=True)
-    name = Column(String(200), unique=True)
-    product_id = Column(String(200), unique=True)
+    name = Column(String(200))
+    product_id = Column(String(200))
     amount = Column(Float)
     suma = Column(Float)
-    dishes = relationship("Dish", secondary=dish_m2m_ingredient, back_populates="ingredients")
-    premixes = relationship("Premix", secondary=dish_m2m_ingredient, back_populates="ingredients")
-    stock_minimum = Column(Float)
-    stock_maximum = Column(Float)
+    ingredient_dishes = relationship("Dish_M2M_Ingredients", back_populates="ingredient")
+    ingredient_premixes = relationship("Premix_M2M_Ingredient", back_populates="ingredient")
+    stock_minimum = Column(Float, default=0.0)
+    min_acceptable = Column(Float, default=0.0)
+    stock_maximum = Column(Float, default=0.0)
     standart_container = Column(Float, default=1.0)
-    measure = Column(String)
+    measure = Column(String(50), default='')
     provider_id = Column(Integer, ForeignKey('providers.id'))
     provider = relationship('Provider', back_populates='ingredients')
-    using = Column(Boolean)
+    using = Column(Boolean, default=True)
     created_at = Column("created_at", DateTime, default=func.now())
     updated_at = Column("updated_at", DateTime, onupdate=func.now())
 
@@ -94,12 +98,11 @@ class Premix(Base):
     __tablename__ = "premixes"
     id = Column(Integer, primary_key=True)
     name = Column(String(200), unique=True)
-    dishes = relationship("Dish", secondary=dish_m2m_premix, back_populates="premixes")
-    ingredients = relationship("Ingredient", secondary=premix_m2m_ingredient, back_populates="premixes")
+    premix_dishes = relationship("Dish_M2M_Premixes", back_populates="premix")
+    premix_ingredients = relationship("Premix_M2M_Ingredient", back_populates="premix")
     description = Column(String(900))
     created_at = Column("created_at", DateTime, default=func.now())
     updated_at = Column("updated_at", DateTime, onupdate=func.now())
-
 
 
 class Category(Base):
@@ -142,10 +145,12 @@ class Role(enum.Enum):
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True)
+    # name =Column(String(150), nullable=True)
     username = Column(String(150), nullable=True)
     first_name = Column(String(150), nullable=True)
     last_name = Column(String(150), nullable=True)
     chat_id = Column(BIGINT, unique=True)
+    phone = Column(String(20))
     email = Column(String(100))
     password = Column(String(255), nullable=False)
     created_at = Column('created_at', DateTime, default=func.now())
@@ -167,8 +172,8 @@ class Provider(Base):
     username = Column(String(150), nullable=True)
     first_name = Column(String(150), nullable=True)
     last_name = Column(String(150), nullable=True)
-    chat_id = Column(BIGINT, unique=True)
-    ingredients = relationship('Ingrdient', back_populates='provider')
+    chat_id = Column(BIGINT)
+    ingredients = relationship('Ingredient', back_populates='provider')
     user_id = Column(Integer, ForeignKey('users.id'))
     user = relationship("User", back_populates="provider")
 

@@ -154,6 +154,7 @@ class UnknownCommand(AbstractHandler):
 class HelloProvider(AbstractHandler):
     async def handle_request(self, request: BotUpdateModel, db: Session):
         if request.message.text == '/start':
+            print("start")
             return await providers.start_message(request, db)
         elif hasattr(self, "next_handler"):
             await self._next_handler.handle_request(request, db)

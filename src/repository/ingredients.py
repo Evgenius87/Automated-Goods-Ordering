@@ -59,7 +59,7 @@ async def update_ingerdients(data: list[dict], db: Session):
     for obj in data:
         ingredient = db.query(Ingredient).filter(Ingredient.product_id == obj.get("product")).first()
         if ingredient:
-            ingredient.name = obj.get("name")
+            # ingredient.name = obj.get("name")
             ingredient.amount = obj.get("amount")
             ingredient.suma = obj.get("sum")
             db.commit()
@@ -90,6 +90,7 @@ async def get_order(db: Session) -> list[Ingredient]:
         provider_with_ingredients = {}
         ingredients = db.query(Ingredient).filter(
             Ingredient.provider_id == provider.id,
+            Ingredient.using == True,
             Ingredient.amount < Ingredient.stock_minimum
         ).all()
         if ingredients:
@@ -125,5 +126,37 @@ async def send_order_to_provider(body: list[OrederIngByProvider], db: Session):
         data = await telegram_bot.make_bot_buttons(["Замовлення прийнято"])
         await telegram_bot.send_bot_message(data)
     return {"Message": "The order has been sent successfully"}
+
+
+async def create_ingredients(db: Session):
+    print("repository/create_ingredients")
+    iiko_server = IikoAPIHandler()
+    storage_balance = iiko_server.get_storage_balance()
+    for obj in storage_balance:
+        new_ingredient = Ingredient(
+                name = obj.get("name"),
+                product_id = obj.get("product"),
+                amount = obj.get("amount"),
+                suma = obj.get("sum"),
+                using = True
+                    )
+        db.add(new_ingredient)
+        db.commit()
+    ingredients = db.query(Ingredient).all()
+    return ingredients
+        
+
+
+async def delete_all(db: Session):
+    ingredients = db.query(Ingredient).delete()
+    # if not ingredients:
+    #     return {"message": "ingredients not found"}
+    # for i in ingredients:
+    #     db.delete(i)
+    db.commit()
+
+    return {"message": "ok"}
+
+
 
 

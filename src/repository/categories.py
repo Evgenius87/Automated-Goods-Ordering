@@ -40,7 +40,7 @@ async def add_new_category(body: CategoryModel, db:Session):
                             parent_id=parent.id)
     db.add(new_caregory)
     db.commit()
-    return new_caregory
+    return await category_offspring(new_caregory)
 
 
 async def get_categories(db: Session):
@@ -100,3 +100,8 @@ async def get_category_dishes(id: int, db: Session):
     return category.dishes
 
 
+async def create_home_category(db: Session):
+    category = Category(name = "home")
+    db.add(category)
+    db.commit()
+    return category

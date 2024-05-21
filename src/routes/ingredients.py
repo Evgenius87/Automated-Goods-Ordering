@@ -16,7 +16,7 @@ router = APIRouter(prefix='/ingredients', tags=["Ingredients"])
 
 
 
-@router.get("/", response_model=list[IngredientModel])
+@router.get("/", response_model=list[IngredientResponseModel])
 async def get_all_ingredients(db: Session = Depends(get_db)):
     ingredients_list = await ingredients.get_all_ingredients(db)
     if ingredients_list is None:
@@ -34,6 +34,17 @@ async def get_ingredient(ingredient_id: int, db: Session = Depends(get_db)):
             status_code=status.HTTP_404_NOT_FOUND, detail="Ingredient not found"
         )
     return ingredient
+
+
+@router.get("/create_ingredients/{num}", response_model=list[IngredientResponseModel])
+async def create_ingregients(num: int, db: Session=Depends(get_db)):
+    print("routs/create_ingredients")
+    new_ingredients = await ingredients.create_ingredients(db)
+    if new_ingredients is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Ingredients not found"
+        )
+    return new_ingredients
 
 
 # @router.get("/storege_balans", response_model=list[IngredientResponseModel])
@@ -71,3 +82,8 @@ async def patch_ingredient(body: IngredientResponseModel,
             status_code=status.HTTP_404_NOT_FOUND, detail="Ingredient not found"
         )
     return ingredient
+
+
+@router.delete("/delete_all")
+async def delete_ingredients(db: Session=Depends(get_db)):
+    return await ingredients.delete_all(db)

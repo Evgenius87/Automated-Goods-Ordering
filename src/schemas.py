@@ -16,12 +16,20 @@ class FromTG(BaseModel):
     language_code: str 
 
 
+class FromTGBot(BaseModel):
+    chat_id: int = Field(alias='id') 
+    is_bot: bool 
+    first_name: str 
+    username: str = None
+   
+
+
 class ReplyMessage(BaseModel):
-    message_id: int
-    from_tg: FromTG = Field(alias='from')
-    chat: dict
-    date: int
-    text: str
+    message_id: int = None
+    from_tg: FromTGBot = Field(alias='from')
+    chat: dict = None
+    date: int = None
+    text: str = None
 
 
 class BotMessage(BaseModel):
@@ -75,16 +83,30 @@ class IngredientModel(BaseModel):
     name: str
     quantity: float
 
+
+
 class IngredientResponseModel(BaseModel):
     id: int
+    name: str = None
+    amount: float = None
+    suma: float = None
+    stock_minimum: float = None
+    min_acceptable: float = None
+    stock_maximum: float = None
+    standart_container: float = None
+    measure: str = None
+    using: bool = None
+
+
+class ShortIngPersponseModel(BaseModel):
     name: str
-    amount: float
-    suma: float
-    stock_minimum: float
-    stock_maximum: float
-    standart_container: float
-    measure: str
-    using: bool
+    measure: str = None
+
+
+class DishM2MIngredients(BaseModel):
+    ingredient_id: int
+    quantity: float
+    ingredient: ShortIngPersponseModel
 
 
 
@@ -95,17 +117,31 @@ class PremixModel(BaseModel):
     ingredients: list[IngredientModel]
     description: str
 
+
+class PremixM2MIngredients(BaseModel):
+    ingredient_id: int
+    quantity: float
+    ingredient: ShortIngPersponseModel
+
+
+
+
 class PremixResponseModel(BaseModel):
+    id: int
     name: str
-    ingredients: list[IngredientModel]
+    premix_ingredients: list[PremixM2MIngredients]
     description: str
 
 class PremixToDishModel(BaseModel):
     id: int
     name: str
-    description: str
     quantity: float
 
+
+class DishM2MPremixes(BaseModel):
+    premix_id: int
+    quantity: float
+    premix: PremixResponseModel
 
 ###########################################3
 
@@ -113,11 +149,10 @@ class PremixToDishModel(BaseModel):
 class DishModel(BaseModel):
     dish_name: str
     description: str = None
-    comment: str
     ingredients: list[IngredientModel]
     premixes: list[PremixToDishModel] = None
     tags: list[str] = None
-    category: str
+    category: str 
     price: int = None
 
 
@@ -127,19 +162,30 @@ class DishResponseModel(BaseModel):
     image_public_id: Any
     dish_name: str
     description: Any
+    dish_ingredients: list[DishM2MIngredients]
+    dish_premixes: list[DishM2MPremixes] = Any
     comments: list[CommentResponseModel]
-    ingredients: list[IngredientModel]
-    premixes: list[PremixToDishModel]
-    # user_id: Any
-    first_name: str = None
     tags: list[TagResponseModel] = Any
     stop_list: Any
+    runing_out: Any
     need_to_sold: Any
+    price: int
     category_name: str = None
     category_id: int = None
     created_at: datetime
-    updated_at: datetime = None
+    updated_at: Optional[datetime] = Any
 
+
+class UpdateDishModel(BaseModel):
+    id: int
+    dish_name: Optional[str]
+    description: Optional[str] = None
+    comment: Optional[str] =None
+    ingredients: Optional[list[IngredientModel]]
+    premixes: Optional[list[PremixToDishModel]] = None
+    tags: Optional[list[str]] = None
+    category: Optional[str]
+    price: Optional[int] = None
 
 
 #################################33########
@@ -157,6 +203,11 @@ class GetChildRequest(BaseModel):
 
 #########################################
 
+class CategoryHomeModel(BaseModel):
+    name: str
+    
+
+
 class CategoryModel(BaseModel):
     name: str
     parent: str = None
@@ -171,14 +222,7 @@ class CategoryResponseModel(BaseModel):
 
 #########################################
     
-class UpdateDishModel(BaseModel):
-    id: int
-    name: str = None
-    description: str = None
-    ingredients: str = None
-    tags: str = None
-    category: str = None
-    price: int = None
+
 
 ########################################3
 
@@ -260,5 +304,28 @@ class UsersResponseModel(BaseModel):
 class UserModel(BaseModel):
     username: str
     first_name: str
-    role: str
+    last_name: str
+    phone: str
+    email: str
+    # role: str
     information: str
+    password: str
+    refresh_token: str
+
+
+class UserResponseModel(BaseModel):
+    id: int
+    # name =Column(String(150), nullable=True)
+    username: str = None
+    first_name: str = None
+    last_name: str = None
+    phone: str = None
+    email: str = None
+    # created_at: str = None
+    refresh_token: str = None
+    banned: bool = None
+    information: str = None
+    forward_provider_message: bool = None
+
+
+    

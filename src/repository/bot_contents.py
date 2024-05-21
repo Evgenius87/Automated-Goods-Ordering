@@ -14,6 +14,9 @@ from src.services.bot_exceptions import bot_exceptions
 load_dotenv()
 TG_API = os.getenv("BOT_TOKEN")
 
+START_MESSAGE = "Введіть код"
+START_PLACEHOLDER = "код:"
+
 bot = TelegramBot(TG_API)
 
 @bot_exceptions

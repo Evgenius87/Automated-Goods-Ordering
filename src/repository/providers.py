@@ -38,8 +38,9 @@ async def get_providers(db: Session):
 
 async def delete_provider(id: int, db: Session):
     provider = db.query(Provider).filter(Provider.id == id).first()
-    db.delete(provider)
-    db.commit()
+    if provider:
+        db.delete(provider)
+        db.commit()
     return {"message": "provider successfully deleted"}
 
 
@@ -51,6 +52,7 @@ async def start_message(request: BotUpdateModel, db: Session):
     )
     db.add(provider)
     db.commit()
+    print("start_message")
     return await telegram_bot.send_message_to_reply(chat_id=request.message.from_tg.chat_id,
                                                     message=INPUT_NAME,
                                                     placeholder=PLACEHOLDER_NAME)

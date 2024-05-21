@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, Request, APIRouter, Depends, status, HTTPException
 from sqlalchemy.orm import Session
 
-from src.schemas import CategoryModel, GetChildRequest, DishResponseModel, CategoryResponseModel
+from src.schemas import CategoryModel, GetChildRequest, DishResponseModel, CategoryResponseModel, CategoryHomeModel
 from src.database.db_connection import get_db
 from src.repository import categories
 from src.database.models import Category
@@ -65,4 +65,8 @@ async def add_new_category(body: CategoryModel, db: Session = Depends(get_db)):
 async def delete_category(id: int, db: Session = Depends(get_db)):
     return await categories.delete_category(id, db)
 
+
+@router.post("/create_home", response_model=CategoryHomeModel)
+async def create_home_category(db: Session = Depends(get_db)):
+    return await categories.create_home_category(db)
 
