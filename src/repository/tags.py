@@ -55,7 +55,7 @@ async def delete_tags(db: Session):
     return {"message": "All tags is correctly deleted"}
 
 
-async def find_tags(tags: str, db: Session) -> list[Tag]:
+async def find_tags(tags: list[str], db: Session) -> list[Tag]:
     """
     Find or create tags in the database based on a string representation of tags.
 
@@ -66,7 +66,6 @@ async def find_tags(tags: str, db: Session) -> list[Tag]:
     Returns:
         list[Tag]: A list containing instances of the Tag model representing the found or created tags.
     """
-    tags = tags.replace(",", " ").replace(".", " ").replace("/", " ").split()
     dish_tags = []
     if tags:
         for tag in tags:

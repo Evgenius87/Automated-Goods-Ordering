@@ -26,3 +26,7 @@ async def get_providers(db: Session = Depends(get_db)):
 @router.delete("/delete/{id}")
 async def delete_provider(id: int, db: Session=Depends(get_db)):
     return await prov.delete_provider(id, db)
+
+
+
+

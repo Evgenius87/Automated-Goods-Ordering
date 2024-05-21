@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from fastapi import status, HTTPException
 from sqlalchemy.orm import Session
 
-from src.schemas import UsersResponseModel
+from src.schemas import UsersResponseModel, UserModel
 from src.database.models import  User
 from src.services.resto_stock_balanse import  IikoAPIHandler
 from src.services.telegram_bot import TelegramBot
@@ -41,3 +41,20 @@ async def delete_user(id: int, db: Session):
     db.delete(user)
     db.commit()
     return {"message": "OK"}
+
+
+async def create_user(body: UserModel, db: Session):
+    user = User(
+        first_name = body.first_name,
+        last_name = body.last_name,
+        phone = body.phone,
+        email = body.email,
+        information = body.information,
+        password = body.password,
+        username = body.username,
+        refresh_token = body.refresh_token
+    )
+    db.add(user)
+    db.commit()
+    response_user = db.query(User).order_by(User.id.desc()).first()
+    return response_user

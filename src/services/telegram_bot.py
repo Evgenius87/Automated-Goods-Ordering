@@ -22,8 +22,8 @@ class TelegramBot:
 
     def __init__(self, API_key: str) -> None:
         self.TG_API = API_key
-        self.SEND_MESSAGE_URL = os.getenv("SEND_MESSAGE_URL")
-        self.SEND_PHOTO_URL = os.getenv("SEND_PHOTO_URL")
+        self.SEND_MESSAGE_URL = f"https://api.telegram.org/bot{API_key}/sendMessage"
+        self.SEND_PHOTO_URL = f"https://api.telegram.org/bot{API_key}/sendPhoto"
 
 
     async def send_start_message(self, request):
@@ -33,6 +33,7 @@ class TelegramBot:
 
 
     async def send_bot_message(self, data: dict):
+        print("bot/send_bot_message")
         async with ClientSession() as session:
             async with session.post(self.SEND_MESSAGE_URL, data=data) as response:
                 result = {'message': 'ok'}
@@ -144,6 +145,7 @@ class TelegramBot:
     async def send_message_to_reply(self, chat_id: int, message: str, placeholder: str):
         force_reply = {"force_reply": True, "input_field_placeholder": placeholder, "selective": True}
         force_reply_json = json.dumps(force_reply)
+        print("bot/send_message_to_reply")
         data = {
             'chat_id': chat_id,
             'text': message,

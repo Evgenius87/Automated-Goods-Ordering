@@ -9,7 +9,6 @@ from os.path import join, dirname
 from dotenv import load_dotenv
 
 
-
 logger = logging.getLogger(__name__)
 
 def handle_errors(method):
@@ -121,6 +120,20 @@ class IikoAPIHandler:
         current_timestamp = datetime.utcnow()
         timestamp_str = current_timestamp.strftime("%Y-%m-%dT%H:%M:%S")
         return timestamp_str
+    
+    @handle_errors
+    def preparation_data(self, data: list[dict]) -> list[dict]:
+        ingredient_dict = {}
+        for ingredient in data:
+            ingredient_id = ingredient["product"]
+            if ingredient_id in ingredient_dict:
+                ingredient_dict[ingredient_id]['amount'] += ingredient['amount']
+                ingredient_dict[ingredient_id]['sum'] += ingredient['sum']
+                continue
+            ingredient_dict[ingredient['product']] = ingredient
+        updated_ingredients = list(ingredient_dict.values())
+        return updated_ingredients
+
 
     @handle_errors
     def get_storage_balance(self) -> list[dict]:
@@ -134,8 +147,11 @@ class IikoAPIHandler:
         :return: A list of dictionaries
         :doc-author: Trelent
         """
+        print("servise/iico")
+        
         products = json.loads(self.get_products())
         nomenclature = json.loads(self.get_nomenclature())
+        products = self.preparation_data(products)
 
         for product in products:
             prod_id = product.get("product")
@@ -151,10 +167,9 @@ class IikoAPIHandler:
 
 # iiko_server = IikoAPIHandler()
 # storage_balance = iiko_server.get_storage_balance()
-# print(storage_balance)
+# # print(storage_balance)
 
-
-
-
-
+# for obj in storage_balance:
+#     if "Молоко" in obj.get("name"):
+#         print(obj)
 

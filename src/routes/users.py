@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, Request, APIRouter, Depends, status, HTTPException
 from sqlalchemy.orm import Session
 
-from src.schemas import  OkResponseModel, UsersResponseModel
+from src.schemas import  OkResponseModel, UsersResponseModel, UserModel, UserResponseModel
 from src.database.db_connection import get_db
 from src.repository import users as reposetory_users
 from src.database.models import User
@@ -52,3 +52,14 @@ async def del_all_users(db: Session = Depends(get_db)):
 @router.delete("/delete/{id}")
 async def delete_user(id: int, db: Session = Depends(get_db)):
     return await reposetory_users.delete_user(id, db)
+
+
+@router.post("/create", response_model=UserResponseModel)
+async def create_user(body: UserModel, db: Session=Depends(get_db)):
+    user = await reposetory_users.create_user(body, db)
+    if not user:
+        return HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User hos not been created"
+        )
+    return user
