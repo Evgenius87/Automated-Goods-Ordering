@@ -58,12 +58,15 @@ class TelegramBot:
         reply_keyboard_marckup_json = json.dumps(reply_keyboard_marckup)
         data = {
             'chat_id': chat_id,
-            'text': '_',
+            'text': '',
             "reply_markup": reply_keyboard_marckup_json}
         return await self.send_bot_message(data)
     
 
-    async def make_bot_buttons(self, name_of_buttons: list, request: BotUpdateModel):
+    async def make_bot_buttons(self, name_of_buttons: list, 
+                               request: BotUpdateModel,
+                               home=True):
+        print("bot/make_bot_buttons")
         chat_id = request.message.from_tg.chat_id
         text = request.message.text
         buttons = []
@@ -71,7 +74,9 @@ class TelegramBot:
             n = []
             n.append(name)
             buttons.append(n)
-        buttons.append(['home'])
+        print(f"Buttons = {buttons}")
+        if home:
+            buttons.append(['home'])
         reply_keyboard_marckup = {'keyboard': buttons}
         reply_keyboard_marckup_json = json.dumps(reply_keyboard_marckup)
         data = {
@@ -135,6 +140,7 @@ class TelegramBot:
 
 
     async def send_message(self, chat_id: int, message: str):
+        print("send message")
         data = {
             'chat_id': chat_id,
             'text': message

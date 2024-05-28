@@ -151,18 +151,21 @@ class UnknownCommand(AbstractHandler):
         elif hasattr(self, "next_handler"):
             await self._next_handler.handle_request(request, db)
 
+
 class HelloProvider(AbstractHandler):
     async def handle_request(self, request: BotUpdateModel, db: Session):
         if request.message.text == '/start':
             print("start")
             return await providers.start_message(request, db)
-        elif hasattr(self, "next_handler"):
+        elif not '/start' in request.message.text or hasattr(self, "next_handler"):
             await self._next_handler.handle_request(request, db)
 
 
 class InfoProvider(AbstractHandler):
     async def handle_request(self, request: BotUpdateModel, db: Session):
-        if request.message.reply_to_message.text:
+        print("InfoProvider")
+        if request.message.reply_to_message:
+            print(f"{request.message.reply_to_message.text}")
             if request.message.reply_to_message.text == providers.INPUT_NAME:
                 return await providers.save_provider_name(request, db)
             if request.message.reply_to_message.text == providers.INPUT_COMPANY_NAME:
@@ -171,13 +174,14 @@ class InfoProvider(AbstractHandler):
                 return await providers.save_provider_phone(request, db)
             if request.message.reply_to_message.text == providers.INPUT_EMAIL:
                 return await providers.save_provider_email(request, db)
-        elif hasattr(self, "next_handler"):
+        elif not request.message.reply_to_message or hasattr(self, "next_handler"):
             await self._next_handler.handle_request(request, db)
 
 
 class EchoToManager(AbstractHandler):
     async def handle_request(self, request: BotUpdateModel, db: Session):
         if request.message.text:
+            print("bot_handler/EchoManager")
             return await providers.forward_message_to_admin(request, db)
         elif hasattr(self, "next_handler"):
             await self._next_handler.handle_request(request, db)

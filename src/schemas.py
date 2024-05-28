@@ -33,16 +33,28 @@ class ReplyMessage(BaseModel):
 
 
 class BotMessage(BaseModel):
-    message_id: int = None
+    message_id: Optional[int] = None
     from_tg: FromTG = Field(alias='from')
-    chat: dict = None
-    date: int = None
-    text: str = None
+    chat: Optional[dict] = None
+    date: Optional[int] = None
+    text: Optional[str] = None
     reply_to_message: Optional[ReplyMessage] = None
 
 
+class FakeBotRequest(BaseModel):
+    message_id: Optional[int] = None
+    from_tg: FromTG
+    chat: Optional[dict] = None
+    date: Optional[int] = None
+    text: Optional[str] = None
+    reply_to_message: Optional[ReplyMessage] = None
+
+class FakeBotUpdateModel(BaseModel):
+    update_id: Optional[int]
+    message:FakeBotRequest = None
+
 class BotUpdateModel(BaseModel):
-    update_id: int
+    update_id: Optional[int]
     message:BotMessage = None
 
 
@@ -76,12 +88,27 @@ class ProviderResponse(BaseModel):
     info: str
 
 
+class ProviderModel(BaseModel):
+    id: int
+
+
 
 #############################################
 class IngredientModel(BaseModel):
     id: int
     name: str
     quantity: float
+
+
+class IngredientUpdateModel(BaseModel):
+    id: int
+    stock_minimum: Optional[float] = None
+    min_acceptable: Optional[float] = None
+    stock_maximum: Optional[float] = None
+    standart_container: Optional[float] = None
+    measure: Optional[str] = None
+    using: Optional[bool] = None
+    provider: Optional[ProviderModel] = None
 
 
 
@@ -96,6 +123,7 @@ class IngredientResponseModel(BaseModel):
     standart_container: float = None
     measure: str = None
     using: bool = None
+    provider_id: int = None
 
 
 class ShortIngPersponseModel(BaseModel):
@@ -148,10 +176,10 @@ class DishM2MPremixes(BaseModel):
 
 class DishModel(BaseModel):
     dish_name: str
-    description: str = None
+    description: Optional[str] = None
     ingredients: list[IngredientModel]
-    premixes: list[PremixToDishModel] = None
-    tags: list[str] = None
+    premixes: Optional[list[PremixToDishModel]] = None
+    tags: Optional[list[str]] = None
     category: str 
     price: int = None
 
