@@ -60,7 +60,7 @@ async def start_message(request: BotUpdateModel, db: Session):
 
 async def save_provider_name(request: BotUpdateModel, db: Session):
     provider = db.query(Provider).filter(Provider.chat_id == request.message.from_tg.chat_id).first()
-    provider.salesman_name = request.message.reply_to_message.text
+    provider.salesman_name = request.message.text
     db.commit()
     return await telegram_bot.send_message_to_reply(chat_id=request.message.from_tg.chat_id,
                                                     message=INPUT_COMPANY_NAME,
@@ -70,7 +70,7 @@ async def save_provider_name(request: BotUpdateModel, db: Session):
 
 async def save_provider_company(request: BotUpdateModel, db: Session):
     provider = db.query(Provider).filter(Provider.chat_id == request.message.from_tg.chat_id).first()
-    provider.provider_name = request.message.reply_to_message.text
+    provider.provider_name = request.message.text
     db.commit()
     return await telegram_bot.send_message_to_reply(chat_id=request.message.from_tg.chat_id,
                                                     message=INPUT_PHONE,
@@ -79,7 +79,7 @@ async def save_provider_company(request: BotUpdateModel, db: Session):
 
 async def save_provider_phone(request: BotUpdateModel, db: Session):
     provider = db.query(Provider).filter(Provider.chat_id == request.message.from_tg.chat_id).first()
-    provider.salesman_phone = request.message.reply_to_message.text
+    provider.salesman_phone = request.message.text
     db.commit()
     return await telegram_bot.send_message_to_reply(chat_id=request.message.from_tg.chat_id,
                                            message=INPUT_EMAIL, placeholder=PLACEHOLDER_EMAIL)
@@ -87,9 +87,9 @@ async def save_provider_phone(request: BotUpdateModel, db: Session):
 
 async def save_provider_email(request: BotUpdateModel, db: Session):
     provider = db.query(Provider).filter(Provider.chat_id == request.message.from_tg.chat_id).first()
-    provider.salesman_email = request.message.reply_to_message.text
+    provider.salesman_email = request.message.text
     db.commit()
-    user = db.query(User).filter(User.email == request.message.reply_to_message.text)
+    user = db.query(User).filter(User.email == request.message.text).first()
     if user:
         provider.user = user
         user.forward_provider_message = True
@@ -99,7 +99,10 @@ async def save_provider_email(request: BotUpdateModel, db: Session):
 
 
 async def forward_message_to_admin(request: BotUpdateModel, db: Session):
-    providers = db.query(Provider).filter(Provider.user.forward_provider_message == True).all()
+    print("provaders/forW_mess_adm/")
+    users = db.query(User).filter(User.forward_provider_message == True).all()
+    users_ids = [user.id for user in users]
+    providers = db.query(Provider).filter(Provider.user_id.in_(users_ids)).all()
     current_provider = db.query(Provider).filter(Provider.chat_id == request.message.from_tg.chat_id).first()
     salesman_name = current_provider.salesman_name
     provider_name = current_provider.provider_name

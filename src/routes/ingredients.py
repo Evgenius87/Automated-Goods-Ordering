@@ -5,7 +5,7 @@ from fastapi import HTTPException,APIRouter, Depends, status, UploadFile, File, 
 from sqlalchemy.orm import Session
 from PIL import Image
 
-from src.schemas import IngredientModel, IngredientResponseModel, OrederIngByProvider
+from src.schemas import IngredientUpdateModel, IngredientResponseModel, OrederIngByProvider
 from src.database.db_connection import get_db
 from src.database.models import Dish, Category
 from src.repository import dishes, ingredients
@@ -74,7 +74,7 @@ async def send_orders(body: list[OrederIngByProvider],
 
 
 @router.patch("/patch", response_model=IngredientResponseModel)
-async def patch_ingredient(body: IngredientResponseModel, 
+async def patch_ingredient(body: IngredientUpdateModel, 
                            db: Session = Depends(get_db)):
     ingredient = await ingredients.patch_ingredient(body, db)
     if ingredient is None:

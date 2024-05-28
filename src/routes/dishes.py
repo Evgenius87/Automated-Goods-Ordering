@@ -80,29 +80,3 @@ async def patch_dish(body: UpdateDishModel, db: Session = Depends(get_db)):
 @router.delete("/delete/{id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_dish(id: int, db: Session = Depends(get_db)):
     return await dishes.delete_dish(id, db)
-
-# @router.post('/add_photo/', status_code=status.HTTP_201_CREATED)
-# async def add_photo(file: UploadFile = File()):
-#      # file.filename = f"{uuid.uuid4()}.jpg"
-#      # contents =  await file.read()
-#      # resized_contents = resize_image(contents, new_width=500, new_height=400)
-#      # image_url, image_public_id = await image_cloudinary.add_image(resized_contents)
-#      return {"message": "ok"}
-
-
-# @router.post('/upload/')
-# async def uplpoad(body: UploadTextModel, status_code=status.HTTP_200_OK):#photo: UploadFile = File(...)):
-#      print(body)
-#      return {'message': 'ok'}
-     
-#      # with open (photo.filename, 'wb') as file:
-#      #      file.write(photo.file.read())
-#      # return {'message': 'ok'}
-
-
-# @router.post("/test/")
-# async def test(name: str = Form(None),file: UploadFile = File(), category: str = Form(None), db: Session = Depends(get_db)):
-#      print(category)
-#      category_db = db.query(Category).filter(Category.name == "test2").first()
-#      print(category_db.name)
-#      return {"message": "ok"}

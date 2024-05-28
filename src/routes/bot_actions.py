@@ -30,13 +30,13 @@ async def root(obj: BotUpdateModel, db: Session = Depends(get_db)):
 
 
 @router.post('/webhook/to_providers', response_model=OkResponseModel)
-async def root(obj: dict):#: BotUpdateModel, db: Session = Depends(get_db)):
-    response = json.dumps(obj)
-    pprint(obj)
-    print("##############################")
-    pprint(response)
-    # bot_handler_chain = await providers_bot_request_handler_chain()
-    # response = await bot_handler_chain.handle_request(obj, db)
+async def root(obj: BotUpdateModel, db: Session = Depends(get_db)):
+    # response = json.dumps(obj)
+    # pprint(obj)
+    # print("##############################")
+    # pprint(response)
+    bot_handler_chain = await providers_bot_request_handler_chain()
+    response = await bot_handler_chain.handle_request(obj, db)
     return {'message': 'ok'}
     
 

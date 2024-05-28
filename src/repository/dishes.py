@@ -1,12 +1,15 @@
+import functools
+import logging
+
 from fastapi import status, HTTPException
 from sqlalchemy.orm import Session
-
 
 from src.schemas import DishModel, UpdateDishModel, IngredientModel, PremixToDishModel
 from src.database.models import Dish, Tag, Category, User, Ingredient, Premix, Dish_M2M_Ingredients, Dish_M2M_Premixes
 from src.services.images import image_cloudinary
 from src.repository.tags import find_tags
 from src.repository import comments
+from src.services.handler_errors import handle_errors
 
 
 
@@ -19,7 +22,7 @@ async def get_dish(dish_id: int, db: Session):
     return db.query(Dish).filter(Dish.id == dish_id).first()
   
 
-
+@handle_errors
 async def add_new_dish(body: DishModel, db: Session):
     if body.tags:
         tags = await find_tags(body.tags, db)
@@ -47,17 +50,18 @@ async def add_new_dish(body: DishModel, db: Session):
             quantity = ingredient_detail.quantity
         )
         db.add(dish_ingredient)
-    for premix_detail in body.premixes:
-        premix = db.query(Premix).filter(Premix.id == premix_detail.id).first()
-        if not premix:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                                detail=f"Premix with ID {premix_detail.id} not found")
-        dish_premix = Dish_M2M_Premixes(
-            dish_id = new_dish.id,
-            premix_id = premix.id,
-            quantity = premix_detail.quantity
-        )
-        db.add(dish_premix)
+    if body.premixes:
+        for premix_detail in body.premixes:
+            premix = db.query(Premix).filter(Premix.id == premix_detail.id).first()
+            if not premix:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                    detail=f"Premix with ID {premix_detail.id} not found")
+            dish_premix = Dish_M2M_Premixes(
+                dish_id = new_dish.id,
+                premix_id = premix.id,
+                quantity = premix_detail.quantity
+            )
+            db.add(dish_premix)
     db.commit()
     db.refresh(new_dish)
     return new_dish

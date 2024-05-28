@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from fastapi import status, HTTPException
 from sqlalchemy.orm import Session
 
-from src.schemas import OrederIngByProvider, IngredientResponseModel, BotUpdateModel
+from src.schemas import OrederIngByProvider, IngredientUpdateModel, BotUpdateModel, BotMessage, FromTG, FakeBotUpdateModel, FakeBotRequest
 from src.database.models import Dish, Tag, Category, User, Ingredient, Provider
 from src.services.resto_stock_balanse import  IikoAPIHandler
 from src.services.telegram_bot import TelegramBot
@@ -16,7 +16,7 @@ from src.repository.tags import find_tags
 load_dotenv()
 
 
-TG_API = os.getenv("BOT_TOKEN")
+TG_API = os.getenv("BOT_TOKEN_PRO")
 
 
 telegram_bot = TelegramBot(TG_API)
@@ -32,21 +32,24 @@ async def get_ingredient(id: int, db: Session) -> Ingredient:
     return ingredient
 
 
-async def patch_ingredient(body: IngredientResponseModel, db: Session):
+async def patch_ingredient(body: IngredientUpdateModel, db: Session):
     ingredient = db.query(Ingredient).filter(Ingredient.id == body.id).first()
     
-    if body.name:
-        ingredient.name = body.name
     if body.using: 
         ingredient.using = body.using
     if body.stock_minimum:
         ingredient.stock_minimum = body.stock_minimum
     if body.stock_maximum:
         ingredient.stock_maximum = body.stock_maximum
+    if body.min_acceptable:
+        ingredient.min_acceptable = body.min_acceptable
     if body.standart_container:
         ingredient.standart_container = body.standart_container
     if body.measure:
         ingredient.measure = body.measure
+    if body.provider:
+        current_provider = db.query(Provider).filter(Provider.id == body.provider.id).first()
+        ingredient.provider = current_provider
 
     db.commit()
     return ingredient
@@ -107,24 +110,42 @@ async def get_order(db: Session) -> list[Ingredient]:
         prov_with_ing_list.append(provider_with_ingredients)
     return prov_with_ing_list
 
+async def create_fake_request(chat_id: int)-> FakeBotUpdateModel:
+    request = FakeBotUpdateModel(
+            update_id=1234,
+            message=FakeBotRequest(
+                from_tg=FromTG(
+                    id=chat_id,
+                    is_bot=True,
+                    first_name='Bot',
+                    language_code='uk'
+                ),
+                text='Підтвердіть замовлення'
+            )
+        )
+    return request
+    
+
+
 
 async def send_order_to_provider(body: list[OrederIngByProvider], db: Session):
     for char in body:
         provider = db.query(Provider).filter(Provider.id == char.id).first()
         name = provider.salesman_name
         chat_id = provider.chat_id
-        message = f"Добрий день, {name}\n"
+        message = f"Добрий день, {name}\nЗамовлення:\n"
         for ing in char.order:
             ing_name = ing.name
-            ing_order = ing.order
-            msg = f"{ing_name} - {ing_order}/n"
+            ing_quantity = ing.quantity
+            msg = f"{ing_name} - {ing_quantity}"
             message += msg
+        message += "\nДякую"
         await telegram_bot.send_message(chat_id, message)
-        req = BotUpdateModel()
-        req.message.from_tg.chat_id = chat_id
-        req.message.text = ''
-        data = await telegram_bot.make_bot_buttons(["Замовлення прийнято"])
+        request = await create_fake_request(chat_id)
+        data = await telegram_bot.make_bot_buttons(["Замовлення прийняте"], request, home=False)
+        await telegram_bot.send_home(request)
         await telegram_bot.send_bot_message(data)
+        await telegram_bot.send_home(request)
     return {"Message": "The order has been sent successfully"}
 
 
