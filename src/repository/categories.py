@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from src.schemas import CategoryModel
 from src.database.models import Dish, Tag, Category, User
+from src.services.handler_errors import handle_errors
 
 
 
@@ -24,6 +25,7 @@ async def category_offspring(category: Category) -> dict:
     return response
 
 
+@handle_errors
 async def add_new_category(body: CategoryModel, db:Session):
     """
     Add a new category to the database.
@@ -75,7 +77,7 @@ async def get_category(id: int, db: Session):
     category = db.query(Category).filter(Category.id == id).first()
     return await category_offspring(category)
 
-
+@handle_errors
 async def delete_category(id: int, db: Session):
     """
     Delete a specific category from the database.
@@ -94,12 +96,12 @@ async def delete_category(id: int, db: Session):
     message = {"message": " Teh Category is correctly deleted"}
     return message
 
-
+@handle_errors
 async def get_category_dishes(id: int, db: Session):
     category = db.query(Category).filter(Category.id == id).first()
     return category.dishes
 
-
+@handle_errors
 async def create_home_category(db: Session):
     category = Category(name = "home")
     db.add(category)

@@ -82,11 +82,11 @@ class Ingredient(Base):
     suma = Column(Float)
     ingredient_dishes = relationship("Dish_M2M_Ingredients", back_populates="ingredient")
     ingredient_premixes = relationship("Premix_M2M_Ingredient", back_populates="ingredient")
-    stock_minimum = Column(Float, default=0.0)
-    min_acceptable = Column(Float, default=0.0)
-    stock_maximum = Column(Float, default=0.0)
+    stock_minimum = Column(Float, default=0.1)
+    min_acceptable = Column(Float, default=0.03)
+    stock_maximum = Column(Float, default=3.0)
     standart_container = Column(Float, default=1.0)
-    measure = Column(String(50), default='')
+    measure = Column(String(50), default='кг')
     provider_id = Column(Integer, ForeignKey('providers.id'))
     provider = relationship('Provider', back_populates='ingredients')
     using = Column(Boolean, default=True)
@@ -139,13 +139,18 @@ class Comment(Base):
 class Role(enum.Enum):
     __tablename__ = 'users_roles'
     admin: str = 'admin'
+    cook: str = 'cook'
+    barman: str = 'barman'
+    provider_bar: str = "provider_bar"
+    provider_kitchen: str = "provider_kitchen"
+    provider_universal: str = "provider_universal"
     user: str = 'user'
 
       
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True)
-    # name =Column(String(150), nullable=True)
+    name =Column(String(150), nullable=True)
     username = Column(String(150), nullable=True)
     first_name = Column(String(150), nullable=True)
     last_name = Column(String(150), nullable=True)
@@ -175,22 +180,9 @@ class Provider(Base):
     chat_id = Column(BIGINT)
     ingredients = relationship('Ingredient', back_populates='provider')
     user_id = Column(Integer, ForeignKey('users.id'))
+    role = Column('role', Enum(Role), default=Role.provider_universal)
     user = relationship("User", back_populates="provider")
 
-
-# class Client(Base):
-#     __tablename__ = "clients"
-#     id = Column(Integer, primary_key=True)
-#     first_name = Column(String(150), nullable=True)
-#     last_name = Column(String(150), nullable=True)
-#     phone= Column(Integer, unique=True)
-#     birthday = Column(DateTime)
-#     discount = Column(Integer)
-#     email = Column(String(100))
-#     password = Column(String(255), nullable=False)
-#     created_at = Column('created_at', DateTime, default=func.now())
-#     refresh_token = Column(String(255))
-#     information = Column(String, nullable=True)
 
 
 

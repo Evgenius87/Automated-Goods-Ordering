@@ -6,6 +6,8 @@ from PIL import Image
 from io import BytesIO
 from dotenv import load_dotenv
 
+from src.conf.config import settings
+
 
 
 load_dotenv()
@@ -14,9 +16,9 @@ load_dotenv()
 class Img:
 
     cloudinary.config(
-        cloud_name=os.environ.get('CLOUD_NAME'),
-        api_key=os.environ.get('API_KEY'),
-        api_secret=os.environ.get('API_SECRET'),
+        cloud_name=settings.cloud_name,
+        api_key=settings.cloud_api_key,
+        api_secret=settings.cloud_api_secret,
         secure=True
     )
 

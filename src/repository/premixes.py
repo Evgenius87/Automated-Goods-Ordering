@@ -6,6 +6,7 @@ from src.schemas import PremixModel, PremixResponseModel, IngredientModel
 from src.database.models import Ingredient, Premix, Premix_M2M_Ingredient
 from src.services.images import image_cloudinary
 from src.repository.tags import find_tags
+from src.services.handler_errors import handle_errors
 
 
 async def get_all_premixes(db: Session) -> list[Premix]:
@@ -20,7 +21,7 @@ async def get_premix(id: int, db: Session) -> PremixResponseModel:
     return premix
 
 
-
+@handle_errors
 async def create_premix(body: PremixModel, db: Session):
     # Створення нового премікса
     new_premix = Premix(name=body.name, description=body.description)
@@ -45,9 +46,12 @@ async def create_premix(body: PremixModel, db: Session):
     db.refresh(new_premix)
     return new_premix
 
-
+@handle_errors
 async def delete_premix(prem_id: int, db: Session):
     premix = db.query(Premix).filter(Premix.id == prem_id).first()
+    if not premix:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Premis not found")
     prem_m2m_ing = db.query(Premix_M2M_Ingredient).filter(Premix_M2M_Ingredient.premix_id == prem_id).all()
     db.delete(premix)
     for obj in prem_m2m_ing:

@@ -4,11 +4,12 @@ import logging
 from fastapi import status, HTTPException
 from sqlalchemy.orm import Session
 
-from src.schemas import DishModel, UpdateDishModel, IngredientModel, PremixToDishModel
+from src.schemas import DishModel, UpdateDishModel, DishResponseModel
 from src.database.models import Dish, Tag, Category, User, Ingredient, Premix, Dish_M2M_Ingredients, Dish_M2M_Premixes
 from src.services.images import image_cloudinary
 from src.repository.tags import find_tags
 from src.repository import comments
+from src.repository import ingredients as repository_ing
 from src.services.handler_errors import handle_errors
 
 
@@ -67,6 +68,7 @@ async def add_new_dish(body: DishModel, db: Session):
     return new_dish
 
 
+@handle_errors
 async def update_photo(id: int, image_url: str, image_public_id: str, db: Session):
     dish = db.query(Dish).filter(Dish.id == id).first()
     if dish.image_public_id:
@@ -77,6 +79,7 @@ async def update_photo(id: int, image_url: str, image_public_id: str, db: Sessio
     return dish
 
 
+@handle_errors
 async def patch(body: UpdateDishModel, db: Session):
     dish = db.query(Dish).filter(Dish.id == body.id).first()
     if body.dish_name:
@@ -129,8 +132,12 @@ async def patch(body: UpdateDishModel, db: Session):
     return dish
 
 
+@handle_errors
 async def delete_dish(dish_id: int, db: Session):
     dish = db.query(Dish).filter(Dish.id == dish_id).first()
+    if not dish:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Dish not found")
     d_m2m_i = db.query(Dish_M2M_Ingredients).filter(Dish_M2M_Ingredients.dish_id == dish_id).all()
     d_m2m_p = db.query(Dish_M2M_Premixes).filter(Dish_M2M_Premixes.dish_id == dish_id).all()
     db.delete(dish)
@@ -142,4 +149,50 @@ async def delete_dish(dish_id: int, db: Session):
             db.delete(obj_2)
     db.commit()
     return{"message": "The Dish is correctly deleted"}
+
+
+@handle_errors
+async def find_ingredients_id_in_dish(dish_id: int, db: Session):
+    d_m2m_i_list = db.query(Dish_M2M_Ingredients).filter(Dish_M2M_Ingredients.dish_id == dish_id).all()
+    ingredients_id = [d_m2m_i.ingredient_id for d_m2m_i in d_m2m_i_list]
+    ingredients_id = list(set(ingredients_id))
+    return ingredients_id
+
+
+@handle_errors
+async def check_available_ing(ingredients_id: list[int], db: Session):
+    need_to_sold = False
+    runing_out = False
+    stop_list = False
+    ingredient = db.query(Ingredient).filter(Ingredient.id.in_(ingredients_id),
+                                             Ingredient.amount < Ingredient.stock_minimum).first()
+    if ingredient:
+        stop_list = True
+        return stop_list, runing_out, need_to_sold
+    ingredient = db.query(Ingredient).filter(Ingredient.id.in_(ingredients_id),
+                                             Ingredient.amount >= Ingredient.stock_minimum,
+                                             Ingredient.amount <= Ingredient.min_acceptable).first()
+    if ingredient:
+        runing_out = True
+        return stop_list, runing_out, need_to_sold
+    ingredient = db.query(Ingredient).filter(Ingredient.id.in_(ingredients_id),
+                                             Ingredient.amount > Ingredient.stock_maximum).first()
+    if ingredient:
+        need_to_sold = True
+        return stop_list, runing_out, need_to_sold
+    
+
+@handle_errors
+async def update_stop_list(db: Session):
+    await repository_ing.update_ingerdients(db)
+    dishes = db.query(Dish).all()
+    for dish in dishes:
+        ingredients_id = await find_ingredients_id_in_dish(dish.id, db)
+        stop_list, runing_out, need_to_sold = await check_available_ing(ingredients_id, db)
+        dish.stop_list = stop_list
+        dish.runing_out = runing_out
+        dish.need_to_sold = need_to_sold
+        db.commit()
+        db.refresh(dish)
+            
 

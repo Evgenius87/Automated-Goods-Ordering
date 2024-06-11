@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from src.schemas import DishModel
 from src.database.models import Dish, Tag, Category, User
 from src.services.images import image_cloudinary
-
+from src.services.handler_errors import handle_errors
 
 async def get_tags(db: Session) -> list[Tag]:
     """
@@ -19,7 +19,7 @@ async def get_tags(db: Session) -> list[Tag]:
     tags = db.query(Tag).order_by(Tag.id).all()
     return tags
 
-
+@handle_errors
 async def delete_tag(id: int, db: Session):
     """
     Delete a specific tag from the database.
@@ -37,7 +37,7 @@ async def delete_tag(id: int, db: Session):
     db.commit()
     return {"message": "The tag is correctly deleted"}
 
-
+@handle_errors
 async def delete_tags(db: Session):
     """
     Delete all tags from the database.
@@ -54,7 +54,7 @@ async def delete_tags(db: Session):
         db.commit()
     return {"message": "All tags is correctly deleted"}
 
-
+@handle_errors
 async def find_tags(tags: list[str], db: Session) -> list[Tag]:
     """
     Find or create tags in the database based on a string representation of tags.
