@@ -8,6 +8,8 @@ from datetime import datetime
 from os.path import join, dirname
 from dotenv import load_dotenv
 
+from src.conf.config import settings
+
 
 logger = logging.getLogger(__name__)
 
@@ -53,13 +55,13 @@ class IikoAPIHandler:
         :return: None by default, but you can return other values
         :doc-author: Trelent
         """
-        self.__login = os.environ.get("RESTO_LOGIN")
-        self.__password = os.environ.get("RESTO_PASSWORD")
+        self.__login = settings.resto_login
+        self.__password = settings.resto_password
         self.sha1_encoding = hashlib.sha1()
-        self._auth_url = "https://dinamo-blues.syrve.online:443/resto/api/auth"
-        self._storage_url = "https://dinamo-blues.syrve.online:443/resto/api/corporation/stores"
-        self._nomenclature_url = "https://dinamo-blues.syrve.online:443/resto/api/v2/entities/products/list"
-        self._products_url = "https://dinamo-blues.syrve.online:443/resto/api/v2/reports/balance/stores"
+        self._auth_url = settings.resto_auth_url
+        self._storage_url = settings.resto_storage_url
+        self._nomenclature_url = settings.resto_nomenclature_url
+        self._products_url = settings.resto_products_url
         self.__token = self.get_authorization_token()
         self.timestamp = self.get_current_timestamp()
 

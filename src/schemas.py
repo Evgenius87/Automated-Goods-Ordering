@@ -72,11 +72,19 @@ class TagResponseModel(BaseModel):
     id: int
     name_tag: str
 
+    class Config:
+        orm_mode = True
+        from_attributes = True
+
 #############################################
 
 class CommentResponseModel(BaseModel):
     id: int
     comment: str
+
+    class Config:
+        orm_mode = True
+        from_attributes = True
 
 ############################################
 
@@ -86,6 +94,10 @@ class ProviderResponse(BaseModel):
     salesman_name: str
     salesman_phone: int
     info: str
+
+    class Config:
+        orm_mode = True
+        from_attributes = True
 
 
 class ProviderModel(BaseModel):
@@ -123,18 +135,30 @@ class IngredientResponseModel(BaseModel):
     standart_container: float = None
     measure: str = None
     using: bool = None
-    provider_id: int = None
+    provider_id: Optional[int] = None
+
+    class Config:
+        orm_mode = True
+        from_attributes = True
 
 
 class ShortIngPersponseModel(BaseModel):
     name: str
     measure: str = None
 
+    class Config:
+        orm_mode = True
+        from_attributes = True
+
 
 class DishM2MIngredients(BaseModel):
     ingredient_id: int
     quantity: float
     ingredient: ShortIngPersponseModel
+
+    class Config:
+        orm_mode = True
+        from_attributes = True
 
 
 
@@ -144,12 +168,16 @@ class PremixModel(BaseModel):
     name: str
     ingredients: list[IngredientModel]
     description: str
-
+    
 
 class PremixM2MIngredients(BaseModel):
     ingredient_id: int
     quantity: float
     ingredient: ShortIngPersponseModel
+
+    class Config:
+        orm_mode = True
+        from_attributes = True
 
 
 
@@ -160,16 +188,29 @@ class PremixResponseModel(BaseModel):
     premix_ingredients: list[PremixM2MIngredients]
     description: str
 
+    class Config:
+        orm_mode = True
+        from_attributes = True
+
+
 class PremixToDishModel(BaseModel):
     id: int
     name: str
     quantity: float
+
+    class Config:
+        orm_mode = True
+        from_attributes = True
 
 
 class DishM2MPremixes(BaseModel):
     premix_id: int
     quantity: float
     premix: PremixResponseModel
+    
+    class Config:
+        orm_mode = True
+        from_attributes = True
 
 ###########################################3
 
@@ -191,7 +232,7 @@ class DishResponseModel(BaseModel):
     dish_name: str
     description: Any
     dish_ingredients: list[DishM2MIngredients]
-    dish_premixes: list[DishM2MPremixes] = Any
+    dish_premixes: Optional[list[DishM2MPremixes]] = Any
     comments: list[CommentResponseModel]
     tags: list[TagResponseModel] = Any
     stop_list: Any
@@ -202,6 +243,11 @@ class DishResponseModel(BaseModel):
     category_id: int = None
     created_at: datetime
     updated_at: Optional[datetime] = Any
+
+    class Config:
+        orm_mode = True
+        from_attributes = True
+
 
 
 class UpdateDishModel(BaseModel):
@@ -248,6 +294,10 @@ class CategoryResponseModel(BaseModel):
     child: bool
     dishes: bool
 
+    class Config:
+        orm_mode = True
+        from_attributes = True
+
 #########################################
     
 
@@ -263,35 +313,6 @@ class HelloResponsemodel(BaseModel):
 
 class UploadTextModel(BaseModel):
     message: str
-    
-#########################################
-
-# class CommentDeleteResponse(BaseModel):
-#     id: int = 1
-#     comment: str = 'My comment'
-
-#     class Config:
-#         orm_mode = True
-
-
-# class CommentResponse(BaseModel):
-#     id: int = 1
-#     comment: str
-#     username: UserDb
-    
-
-#     class Config:
-#         orm_mode = True
-
-
-# class CommentModel(BaseModel):
-#     comment: str = Field(min_length=1, max_length=255)
-#     image_id: int = Field(1, gt=0)
-
-
-# class CommentModelUpdate(BaseModel):
-#     comment: str = Field(min_length=1, max_length=255)
-#     comment_id: int 
 
 class CommentModel(BaseModel):
     comment: str
@@ -307,14 +328,30 @@ class CommentResponeModel(BaseModel):
 ################################################
     
 class IngOrderModel(BaseModel):
-    id: int
-    name: str
-    quantity: int
+    id: Optional[int]
+    name: Optional[str]
+    quantity: Optional[int]
 
 class OrederIngByProvider(BaseModel):
-    id: int
-    name: str
-    order: list[IngOrderModel]
+    id: Optional[int]
+    name: Optional[str]
+    order: Optional[list[IngOrderModel]]
+
+
+###############################################3
+
+class AvailableDishesModel(BaseModel):
+    dishes: Optional[list[DishResponseModel]]
+
+class StopListModel(BaseModel):
+    stop_list: Optional[list[DishResponseModel]]
+    runing_out: Optional[list[DishResponseModel]]
+    need_to_sold: Optional[list[DishResponseModel]]
+    
+    class Config:
+        orm_mode = True
+        from_attributes = True
+
 
 
 ################################################
@@ -328,6 +365,10 @@ class UsersResponseModel(BaseModel):
     information: str
     role: str
     forward_provider_message: bool
+
+    class Config:
+        orm_mode = True
+        from_attributes = True
 
 class UserModel(BaseModel):
     username: str

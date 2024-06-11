@@ -10,9 +10,12 @@ from src.schemas import BotUpdateModel, FromTG, BotMessage
 from src.database.models import Dish, User, Category
 from src.services.telegram_bot import TelegramBot
 from src.services.bot_exceptions import bot_exceptions
+from src.conf.config import settings
+from src.services.handler_errors import handle_errors
+
 
 load_dotenv()
-TG_API = os.getenv("BOT_TOKEN")
+TG_API = settings.bot_token
 
 START_MESSAGE = "Введіть код"
 START_PLACEHOLDER = "код:"
@@ -23,6 +26,7 @@ bot = TelegramBot(TG_API)
 async def get_current_user(request: BotUpdateModel, db: Session) -> User:
     user = db.query(User).filter(User.chat_id == request.message.from_tg.chat_id).first()
     return user
+
 
 @bot_exceptions
 async def bot_start(request: BotUpdateModel, db: Session) -> dict:

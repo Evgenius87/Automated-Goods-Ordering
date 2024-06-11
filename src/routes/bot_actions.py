@@ -16,10 +16,12 @@ from src.bot_request_handler.bot_request_handler import bot_request_handler_chai
 from src.bot_request_handler.bot_request_handler import providers_bot_request_handler_chain
 from src.services.bot_exceptions import bot_exceptions
 
+
+
 router = APIRouter(prefix='/bot_actions', tags=["Bot"])
 
-load_dotenv()
-TG_API = os.getenv("BOT_TOKEN")
+# load_dotenv()
+# TG_API = os.getenv("BOT_TOKEN")
 
 
 @router.post('/webhook/to_users', response_model=OkResponseModel)
