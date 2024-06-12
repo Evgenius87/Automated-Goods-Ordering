@@ -12,8 +12,8 @@ from src.repository import bot_contents, providers
 # from src.services.chat_gpt import Gpt
 
 
-load_dotenv()
-admin_secret = os.getenv('ADMIN_SECRET')
+
+admin_secret = 'ADMIN_SECRET'
 
 
 class AbstractHandler(ABC):

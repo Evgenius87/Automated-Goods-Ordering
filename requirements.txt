@@ -1,0 +1,13 @@
+fastapi
+psycopg2
+fastapi-mail
+cloudinary
+sqlalchemy
+pydantic[dotenv]
+uvicorn
+alembic
+pillow
+pyngrok
+requests
+aiohttp
+fastapi-mail

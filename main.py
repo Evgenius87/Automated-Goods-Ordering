@@ -1,13 +1,9 @@
-import uvicorn
-import os
-import asyncio
-
-from dotenv import load_dotenv
-from fastapi import FastAPI, Request, status, Header
-from fastapi.middleware import Middleware
+# from dotenv import load_dotenv
+from fastapi import FastAPI, status
+# from fastapi.middleware import Middleware
 from fastapi.middleware.cors import CORSMiddleware
-from httpx import AsyncClient
-from pyngrok import ngrok
+# from httpx import AsyncClient
+# from pyngrok import ngrok
 
 from src.routes import (bot_actions,  
                         dishes, 
@@ -22,12 +18,12 @@ from src.routes import (bot_actions,
 
 
 
-load_dotenv()
-TG_API_KEY_FOR_USERS = os.getenv("BOT_TOKEN")
-TG_API_KEY_FOR_PROVIDERS = os.getenv("BOT_TOKEN_PRO")
+# load_dotenv()
+# TG_API_KEY_FOR_USERS = os.getenv("BOT_TOKEN")
+# TG_API_KEY_FOR_PROVIDERS = os.getenv("BOT_TOKEN_PRO")
 
 app = FastAPI()
-header = Header({"ngrok-skip-browser-warning": True})
+# header = Header({"ngrok-skip-browser-warning": True})
 
 origins = ["http://172.25.8.7:3000/React-cocktails",
             "http://localhost:3000/React-cocktails",
@@ -63,7 +59,7 @@ app.include_router(stop_list.router, prefix="/api")
 
 
 
-TELEGRAM_SET_WEBHOOK_URL = f"https://api.telegram.org/bot{TG_API_KEY_FOR_USERS}/setWebhook" #?url=https://{whook}/api/bot_actions/webhook
+# TELEGRAM_SET_WEBHOOK_URL = f"https://api.telegram.org/bot{TG_API_KEY_FOR_USERS}/setWebhook" #?url=https://{whook}/api/bot_actions/webhook
 
 
 @app.get('/hello/', status_code=status.HTTP_200_OK)
@@ -72,35 +68,35 @@ async def hello():
     return message
 
 
-async def request(url: str):#, payload: dict, debug: bool = False):
-    async with AsyncClient() as client:
-        request = await client.post(url)#, json=payload)
-        # if debug:
-        #     print(request.json())
-        return request
+# async def request(url: str):#, payload: dict, debug: bool = False):
+#     async with AsyncClient() as client:
+#         request = await client.post(url)#, json=payload)
+#         # if debug:
+#         #     print(request.json())
+#         return request
 
-async def set_telegram_webhook_url() -> bool:
-    payload = {"url": f"{HOST_URL}/webhook/?url=https://{TG_API_KEY_FOR_USERS}/api/bot_actions/webhook"}
-    req_to_users = await request(f"https://api.telegram.org/bot{TG_API_KEY_FOR_USERS}/setWebhook?url={HOST_URL}/api/bot_actions/webhook/to_users")#TELEGRAM_SET_WEBHOOK_URL, payload)
-    req_to_providefs = await request(f"https://api.telegram.org/bot{TG_API_KEY_FOR_PROVIDERS}/setWebhook?url={HOST_URL}/api/bot_actions/webhook/to_providers")
-    return req_to_users.status_code == 200
+# async def set_telegram_webhook_url() -> bool:
+#     payload = {"url": f"{HOST_URL}/webhook/?url=https://{TG_API_KEY_FOR_USERS}/api/bot_actions/webhook"}
+#     req_to_users = await request(f"https://api.telegram.org/bot{TG_API_KEY_FOR_USERS}/setWebhook?url={HOST_URL}/api/bot_actions/webhook/to_users")#TELEGRAM_SET_WEBHOOK_URL, payload)
+#     req_to_providefs = await request(f"https://api.telegram.org/bot{TG_API_KEY_FOR_PROVIDERS}/setWebhook?url={HOST_URL}/api/bot_actions/webhook/to_providers")
+#     return req_to_users.status_code == 200
 
 
 
-if __name__ == "__main__":
-    # uvicorn.run("main:app", port=8000, host="localhost", reload=True)
-    PORT = 8000
-    http_tunnel = ngrok.connect(PORT, bind_tls=True)#, proto="http", name="dynamo-blues")
-    public_url = http_tunnel.public_url
-    HOST_URL = public_url
-    print(HOST_URL)
-    loop = asyncio.get_event_loop()
-    success = loop.run_until_complete(set_telegram_webhook_url())
+# if __name__ == "__main__":
+#     # uvicorn.run("main:app", port=8000, host="localhost", reload=True)
+#     PORT = 8000
+#     http_tunnel = ngrok.connect(PORT, bind_tls=True)#, proto="http", name="dynamo-blues")
+#     public_url = http_tunnel.public_url
+#     HOST_URL = public_url
+#     print(HOST_URL)
+#     loop = asyncio.get_event_loop()
+#     success = loop.run_until_complete(set_telegram_webhook_url())
 
-    if success:
-        uvicorn.run("main:app", host="127.0.0.1", port=PORT, log_level="info", reload=True)
-    else:
-        print("Fail, closing the app.")
-    # uvicorn.run("main:app", host="127.0.0.1", port=PORT, log_level="info", reload=True)
+#     if success:
+#         uvicorn.run("main:app", host="127.0.0.1", port=PORT, log_level="info", reload=True)
+#     else:
+#         print("Fail, closing the app.")
+#     # uvicorn.run("main:app", host="127.0.0.1", port=PORT, log_level="info", reload=True)
 
-#f"https://api.telegram.org/bot{TG_API}/setWebhook?url=https://{whook}/api/bot_actions/webhook")
+# #f"https://api.telegram.org/bot{TG_API}/setWebhook?url=https://{whook}/api/bot_actions/webhook")
