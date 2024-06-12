@@ -11,5 +11,5 @@ with open("ing_response.json", "r", encoding='UTF-8') as json_data:
     data = json.loads(data)
 
 for ingredient in data:
-    if "Ром" in ingredient["name"]:
+    if "Цукор" in ingredient["name"]:
         print(ingredient)

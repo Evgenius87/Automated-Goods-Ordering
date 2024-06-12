@@ -6,10 +6,6 @@ class Settings(BaseSettings):
     bot_token_pro: str
     send_message_url: str
     send_photo_url: str
-    postgres_db: str
-    postgres_user: str
-    postgres_password: str
-    postgres_port: str
     database_url: str
     secret_key: str
     algorithm: str
