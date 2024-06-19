@@ -1,8 +1,8 @@
 """Init
 
-Revision ID: 5b400460aa8e
+Revision ID: 2b319ee807e9
 Revises: 
-Create Date: 2024-06-12 13:45:41.057366
+Create Date: 2024-04-23 19:40:39.956352
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '5b400460aa8e'
+revision: str = '2b319ee807e9'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -45,18 +45,16 @@ def upgrade() -> None:
     )
     op.create_table('users',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('name', sa.String(length=150), nullable=True),
     sa.Column('username', sa.String(length=150), nullable=True),
     sa.Column('first_name', sa.String(length=150), nullable=True),
     sa.Column('last_name', sa.String(length=150), nullable=True),
     sa.Column('chat_id', sa.BIGINT(), nullable=True),
-    sa.Column('phone', sa.String(length=20), nullable=True),
     sa.Column('email', sa.String(length=100), nullable=True),
     sa.Column('password', sa.String(length=255), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.Column('refresh_token', sa.String(length=255), nullable=True),
     sa.Column('banned', sa.Boolean(), nullable=True),
-    sa.Column('role', sa.Enum('admin', 'cook', 'barman', 'provider_bar', 'provider_kitchen', 'provider_universal', 'user', name='role'), nullable=True),
+    sa.Column('role', sa.Enum('admin', 'user', name='role'), nullable=True),
     sa.Column('information', sa.String(), nullable=True),
     sa.Column('forward_provider_message', sa.Boolean(), nullable=True),
     sa.PrimaryKeyConstraint('id'),
@@ -69,7 +67,6 @@ def upgrade() -> None:
     sa.Column('dish_name', sa.String(length=200), nullable=True),
     sa.Column('description', sa.String(length=900), nullable=True),
     sa.Column('stop_list', sa.Boolean(), nullable=True),
-    sa.Column('runing_out', sa.Boolean(), nullable=True),
     sa.Column('need_to_sold', sa.Boolean(), nullable=True),
     sa.Column('price', sa.Integer(), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=True),
@@ -90,9 +87,9 @@ def upgrade() -> None:
     sa.Column('last_name', sa.String(length=150), nullable=True),
     sa.Column('chat_id', sa.BIGINT(), nullable=True),
     sa.Column('user_id', sa.Integer(), nullable=True),
-    sa.Column('role', sa.Enum('admin', 'cook', 'barman', 'provider_bar', 'provider_kitchen', 'provider_universal', 'user', name='role'), nullable=True),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('chat_id')
     )
     op.create_table('comments',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -129,16 +126,17 @@ def upgrade() -> None:
     sa.Column('amount', sa.Float(), nullable=True),
     sa.Column('suma', sa.Float(), nullable=True),
     sa.Column('stock_minimum', sa.Float(), nullable=True),
-    sa.Column('min_acceptable', sa.Float(), nullable=True),
     sa.Column('stock_maximum', sa.Float(), nullable=True),
     sa.Column('standart_container', sa.Float(), nullable=True),
-    sa.Column('measure', sa.String(length=50), nullable=True),
+    sa.Column('measure', sa.String(), nullable=True),
     sa.Column('provider_id', sa.Integer(), nullable=True),
     sa.Column('using', sa.Boolean(), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.Column('updated_at', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['provider_id'], ['providers.id'], ),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('name'),
+    sa.UniqueConstraint('product_id')
     )
     op.create_table('dish_m2m_ingredient',
     sa.Column('id', sa.Integer(), nullable=False),

@@ -1,9 +1,10 @@
 from datetime import datetime
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, EmailStr
 from typing import ClassVar, Annotated
 from fastapi import UploadFile, File
-from src.database.models import Tag
+from src.database.models import Tag, Role
 from typing import Optional, Any, Union
+
 
 
 
@@ -358,12 +359,14 @@ class StopListModel(BaseModel):
 
 class UsersResponseModel(BaseModel):
     id: int
+    name: str
     username: str
     first_name: str
     last_name: str
     email: str
     information: str
-    role: str
+    phone: str = None
+    role: Role = Field()
     forward_provider_message: bool
 
     class Config:
@@ -376,25 +379,59 @@ class UserModel(BaseModel):
     last_name: str
     phone: str
     email: str
-    # role: str
+    role: str
     information: str
     password: str
     refresh_token: str
+    
+    class Config:
+        orm_mode = True
+        from_attributes = True
 
 
-class UserResponseModel(BaseModel):
+class UserUpdateModel(BaseModel):
     id: int
-    # name =Column(String(150), nullable=True)
-    username: str = None
-    first_name: str = None
-    last_name: str = None
-    phone: str = None
-    email: str = None
-    # created_at: str = None
-    refresh_token: str = None
-    banned: bool = None
-    information: str = None
-    forward_provider_message: bool = None
+    name: Optional[str]
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    role: Optional[str]
+    banned: Optional[bool] = None
+    information: Optional[str] = None
+    forward_provider_message: Optional[bool] = None
+
+    class Config:
+        orm_mode = True
+        from_attributes = True
+
+
+class UserRegistrationBase(BaseModel):
+    email: EmailStr
+    password: str = Field(min_length=6, max_length=16)
+
+    class Config:
+        orm_mode = True
+        from_attributes = True
+
+
+class UserDb(BaseModel):
+    id: int
+    username: str
+    email: EmailStr
+    created_at: datetime
+    role: Role = Field()
+    
+    class Config:
+        orm_mode = True
+
+class UserImages(UserDb):
+    number_of_images: int = 0
+    banned: bool
+
+
+
+
 
 
     
