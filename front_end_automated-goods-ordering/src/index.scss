@@ -6,17 +6,19 @@ html {
   background-image: linear-gradient(
     to bottom,
     #282c34,
-    #37393f,
-    #45464a,
+    // #37393f,
+    // #45464a,
     #545456,
-    #626262
+    // #626262
   );
 }
 
 body {
+  display: flex;
+  justify-content: center;
   margin: 0 auto;
-  width: 100%;
-  max-width: 1600px;
+  width: 100vw;
+  overflow: hidden;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
     "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
     sans-serif;

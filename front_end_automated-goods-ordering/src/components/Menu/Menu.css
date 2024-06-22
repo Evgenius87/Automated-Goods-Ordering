@@ -4,20 +4,16 @@
   grid-template-rows: 1fr;
   grid-template-areas: "side-bar cards";
   grid-area: content;
-  /* gap: 20px; */
-  height: 100%;
-
+  overflow: hidden;
 }
 
-@media screen and (orientation: portrait) {
+@media (orientation: portrait) {
   .menu {
-    display: grid;
-    /* grid-template: ; */
     grid-template-columns: 1fr;
-    grid-template-rows: 1fr;
-    grid-template-areas: "side-bar" "cards";
-    grid-area: content;
-    gap: 20px;
-    height: 100%;
+    grid-template-rows: min-content 1fr;
+    grid-template-areas:
+      "side-bar"
+      "cards";
+  overflow: auto;
   }
 }

@@ -1,68 +1,58 @@
 @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400..700&display=swap');
 
 .nav {
+  display: grid;
+  grid-template-columns: 50px 1fr 50px;
+  grid-template-rows: 1fr;
+  align-items: self-start;
+  justify-items: self-start;
+  align-content: start;
+  /* display: flex; */
+  /* justify-content: center; */
+  /* align-items: last baseline; */
+  /* align-items: center; */
+  /* gap: 30px; */
   border-bottom: 1px solid black;
   box-shadow: 0 3px 0 rgb(57 57 57);
   font-size: 14px;
   grid-area: header;
-  padding-top: 10px;
-  padding-bottom: 5px;
+  height: 70px;
+  width: 100vw;
+  padding: 0 20px;
+  background: var(--backgroundNavBar);
+  transition: all .3s;
+  z-index: 100;
+}
+.grid-start {
+  grid-area: 1 / 1 / 2 / 2;
+  place-self: center;
 }
 
-.nav-h {
-  display: flex;
-  justify-content: space-around;
-  padding: 0 20px 0;
+.grid-center {
+  grid-area: 1 / 2 / 2 / 3;
+  place-self: center;
 }
 
-.nav-logoburger {
-  display: flex;
-  position: relative;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  z-index: 1;
+.grid-end {
+  grid-area: 1 / 3 / 2 / 4;
+  place-self: center;
 }
 
 .logo-text {
-  display: block;
-  align-self: center;
-
   color: #ffd3a9;
   font-family: 'Dancing Script';
   font-size: 2.5rem;
-  text-align: center;
-  text-shadow: 0 0 6px var(--colorTextOrangeHover), 0 0 16px var(--colorTextOrangeHover), 0 0 22px var(--colorTextOrangeHover),
-    0 0 44px var(--colorTextOrangeHover), 0 0 62px #f00, 00 11px var(--colorTextOrangeHover), 0 0 95px #f00;
+  text-shadow:
+    0 0 6px var(--colorTextOrangeHover),
+    0 0 16px var(--colorTextOrangeHover),
+    0 0 22px var(--colorTextOrangeHover),
+    0 0 44px var(--colorTextOrangeHover),
+    0 0 62px #f00,
+    00 11px var(--colorTextOrangeHover),
+    0 0 95px #f00;
   animation: blink 6s infinite;
-  /* padding-top: 10px; */
-  margin-top: 0;
-  margin-bottom: 0;
-}
-
-@media screen and (orientation: portrait) {
-
-  .nav {
-  height: 61px;
-  padding-top: 0;
-  padding-bottom: 0;
-  transition: all .3s;
-  }
-  .nav-active-burger{
-    height:125px;
-    padding-top: 0;
-    padding-bottom: 0;
-    transition: all .3s;
-}
-
-  .nav-h {
-    justify-content: space-between;
-    flex-direction: column;
-  }
-
-  .logo-text {
-    /* padding-top: 5px; */
-  }
+  margin: 0;
+  padding: 0;
 }
 
 @keyframes blink {
@@ -87,13 +77,3 @@
       0 0 44px var(--colorTextOrangeHover), 0 0 62px #f00, 0 0 11px #f98a03, 0 0 95px #f00;
   }
 }
-    .max-content-animation {
-      max-height: 100px;
-      overflow: hidden;
-      transition: max-height 3s ease;
-    }
-
-    .max-content-animation.expanded {
-      max-height: 1000px;
-      /* Довільне значення, яке перевищує потрібний розмір max-content */
-    }

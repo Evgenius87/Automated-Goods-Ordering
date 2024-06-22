@@ -1,29 +1,41 @@
 * {
   --colorTextOrange: #cd8706;
   --colorTextOrangeHover: #f9a407;
+  --backgroundNavBar: #292c35;
 }
 
 .App {
   display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: max-content 1fr 25px;
+  grid-template-columns: auto;
+  // justify-content: center;
+  grid-template-rows: min-content 1fr 25px;
   grid-template-areas:
     "header"
     "content"
     "footer";
+    // gap:5px;
   height: 100vh;
+  width: 100vw;
   overflow-x: hidden;
   overflow-y: hidden;
 }
 
 .conten {
-  // padding: 3px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  margin: 0 auto;
+  max-width: 1600px;
   overflow-y: auto;
   grid-area: content;
   overflow-x: hidden;
 }
 @media (orientation: portrait) {
   .App {
-    grid-template-rows: auto 1fr 25px;
+    grid-template-rows: min-content 1fr 25px;
+    .conten {
+      width: 100vw;
+      height: 100%;
+    }
   }
 }
