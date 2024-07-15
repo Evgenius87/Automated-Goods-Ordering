@@ -185,7 +185,10 @@ class Provider(Base):
 
 
 
-
+class Token(Base):
+    __tablename__ = "token_black_list"
+    access_token = Column(String(255), primary_key=True)
+    created_at = Column('created_at', DateTime, default=func.now())
 
 
 

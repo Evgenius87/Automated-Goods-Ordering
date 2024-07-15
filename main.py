@@ -18,7 +18,8 @@ from src.routes import (bot_actions,
                         premixes, 
                         comments,
                         providers, 
-                        stop_list)
+                        stop_list,
+                        auth)
 
 
 
@@ -51,12 +52,13 @@ app.add_middleware(
 
 
 app.include_router(bot_actions.router, prefix='/api')
-app.include_router(dishes.router, prefix='/api')
-app.include_router(categories.router, prefix='/api')
+app.include_router(auth.router, prefix='/api')
 app.include_router(users.router, prefix='/api')
-app.include_router(tags.router, prefix="/api")
+app.include_router(dishes.router, prefix='/api')
 app.include_router(ingredients.router, prefix="/api")
 app.include_router(premixes.router, prefix="/api")
+app.include_router(categories.router, prefix='/api')
+app.include_router(tags.router, prefix="/api")
 app.include_router(comments.router, prefix="/api")
 app.include_router(providers.router, prefix="/api")
 app.include_router(stop_list.router, prefix="/api")

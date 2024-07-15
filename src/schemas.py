@@ -357,7 +357,7 @@ class StopListModel(BaseModel):
 
 ################################################
 
-class UsersResponseModel(BaseModel):
+class UserResponseModel(BaseModel):
     id: int
     name: str
     username: str
@@ -379,7 +379,7 @@ class UserModel(BaseModel):
     last_name: str
     phone: str
     email: str
-    role: str
+    role: Role = Field()
     information: str
     password: str
     refresh_token: str
@@ -396,7 +396,7 @@ class UserUpdateModel(BaseModel):
     last_name: Optional[str] = None
     phone: Optional[str] = None
     email: Optional[str] = None
-    role: Optional[str]
+    role: Optional[str] = None
     banned: Optional[bool] = None
     information: Optional[str] = None
     forward_provider_message: Optional[bool] = None
@@ -415,19 +415,11 @@ class UserRegistrationBase(BaseModel):
         from_attributes = True
 
 
-class UserDb(BaseModel):
-    id: int
-    username: str
-    email: EmailStr
-    created_at: datetime
-    role: Role = Field()
-    
-    class Config:
-        orm_mode = True
+class TokenModel(BaseModel):
+    access_token: str
+    refresh_token: str
+    token_type: str
 
-class UserImages(UserDb):
-    number_of_images: int = 0
-    banned: bool
 
 
 

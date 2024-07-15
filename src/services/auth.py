@@ -1,5 +1,5 @@
 import pickle
-import redis
+# import redis
 
 from typing import Optional
 
@@ -11,6 +11,7 @@ from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 
 from src.database.db_connection import get_db
+from src.database.models import Token
 from src.repository import users as repository_users
 from src.conf.config import settings
 
@@ -20,7 +21,7 @@ class Auth:
     SECRET_KEY = settings.secret_key
     ALOGORITHM = settings.algorithm
     oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
-    r = redis.Redis(host=settings.redis_host, port=settings.redis_port, db=0)
+    # r = redis.Redis(host=settings.redis_host, port=settings.redis_port, db=0)
 
 
     def verify_password(self, plain_password, hashed_password):
@@ -36,6 +37,7 @@ class Auth:
         """
         return self.pwd_context.verify(plain_password, hashed_password)
     
+    
     def get_password_hash(self, password: str):
         """
         Takes a password as input and returns the hash of that password.
@@ -46,7 +48,8 @@ class Auth:
         """
         return self.pwd_context.hash(password)
 
-    async def create_access_tocken(self, data: dict, expires_delta: Optional[float] = None):
+
+    async def create_access_token(self, data: dict, expires_delta: Optional[float] = None):
         """
         Сreates a new access token for the user.
 
@@ -64,6 +67,21 @@ class Auth:
         encoded_access_token = jwt.encode(to_encode, self.SECRET_KEY, algorithm=self.ALOGORITHM)
         return encoded_access_token
     
+
+    async def is_token_blacklisted(self, token: str, db: Session = Depends(get_db)) -> bool:
+
+        blacklisted_tokens = [i.refresh_token for i in db.query(Token).all()]
+        if blacklisted_tokens:
+            if token in blacklisted_tokens:
+                return True
+        return False
+
+
+    async def add_token_to_blacklist(self, token: str, db: Session):
+        return await repository_users.add_token_to_blacklist(token, db)
+
+
+
     async def create_refresh_token(self, data: dict, expires_delta: Optional[float] = None):
         """
         Сreates a refresh token for the user.
@@ -82,6 +100,7 @@ class Auth:
         encoded_refresh_token = jwt.encode(to_encode, self.SECRET_KEY, algorithm=self.ALOGORITHM)
         return encoded_refresh_token
     
+
     async def decode_refresh_token(self, refresh_token: str):
         """
         Takes a refresh token and decodes it.
@@ -99,6 +118,7 @@ class Auth:
         except JWTError:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials")
         
+
     async def get_current_user(self, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
         """
         It is a dependency that will be called by the FastAPI framework to retrieve the current user.
@@ -124,15 +144,16 @@ class Auth:
                 raise credentials_exception
         except JWTError as e:
             raise credentials_exception
-        user = self.r.get(f"user:{email}")
-        if user is None:
-            user = await repository_users.get_user_by_email(email, db)
-            if user is None:
-                raise credentials_exception
-            self.r.set(f"user:{email}", pickle.dumps(user))
-            self.r.expire(f"user:{email}", 900)
-        else:
-            user = pickle.loads(user)
+        user = await repository_users.get_user_by_email(email, db)
+        # user = self.r.get(f"user:{email}")
+        # if user is None:
+        #     user = await repository_users.get_user_by_email(email, db)
+        #     if user is None:
+        #         raise credentials_exception
+        #     self.r.set(f"user:{email}", pickle.dumps(user))
+        #     self.r.expire(f"user:{email}", 900)
+        # else:
+        #     user = pickle.loads(user)
         return user
     
 
@@ -155,6 +176,8 @@ class Auth:
                                 detail="Invalid token for email verification")
             
 
+
+
     
     
-auth_servise = Auth()
+auth_service = Auth()
