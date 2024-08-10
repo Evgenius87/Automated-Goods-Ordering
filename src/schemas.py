@@ -194,6 +194,13 @@ class PremixResponseModel(BaseModel):
         from_attributes = True
 
 
+class UpdatePremixModel(BaseModel):
+    id: int
+    name: Optional[str]
+    ingredients: Optional[list[IngredientModel]]
+    description: Optional[str]
+
+
 class PremixToDishModel(BaseModel):
     id: int
     name: str
@@ -234,14 +241,14 @@ class DishResponseModel(BaseModel):
     description: Any
     dish_ingredients: list[DishM2MIngredients]
     dish_premixes: Optional[list[DishM2MPremixes]] = Any
-    comments: list[CommentResponseModel]
+    comments: Optional[list[CommentResponseModel]]
     tags: list[TagResponseModel] = Any
     stop_list: Any
     runing_out: Any
     need_to_sold: Any
     price: int
     category_name: str = None
-    category_id: int = None
+    category_id: Optional[int] = None
     created_at: datetime
     updated_at: Optional[datetime] = Any
 
@@ -359,15 +366,15 @@ class StopListModel(BaseModel):
 
 class UserResponseModel(BaseModel):
     id: int
-    name: str
-    username: str
-    first_name: str
-    last_name: str
+    name: Optional[str]
+    username: Optional[str]
+    first_name: Optional[str]
+    last_name: Optional[str]
     email: str
-    information: str
-    phone: str = None
+    information: Optional[str]
+    phone: Optional[str] = None
     role: Role = Field()
-    forward_provider_message: bool
+    forward_provider_message: Optional[bool]
 
     class Config:
         orm_mode = True
@@ -407,8 +414,10 @@ class UserUpdateModel(BaseModel):
 
 
 class UserRegistrationBase(BaseModel):
+    first_name: str
+    last_name: str
     email: EmailStr
-    password: str = Field(min_length=6, max_length=16)
+    password: str = Field(min_length=6)
 
     class Config:
         orm_mode = True
@@ -422,7 +431,29 @@ class TokenModel(BaseModel):
 
 
 
+class RequestEmail(BaseModel):
+    email: EmailStr
 
+
+class GoogleAuthResp(BaseModel):
+    at_hash: Optional[str]
+    aud: Optional[str]
+    azp: Optional[str]
+    email: Optional[str]
+    email_verified: Optional[bool]
+    exp: Optional[int]
+    family_name: Optional[str]
+    given_name: Optional[str]
+    iat: Optional[int]
+    iss: Optional[str]
+    name: Optional[str]
+    nonce: Optional[str]
+    picture: Optional[str]
+    sub: Optional[str]
+
+    class Config:
+        orm_mode = True
+        from_attributes = True
 
 
 

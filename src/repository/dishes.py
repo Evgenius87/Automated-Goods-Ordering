@@ -82,6 +82,7 @@ async def update_photo(id: int, image_url: str, image_public_id: str, db: Sessio
 @handle_errors
 async def patch(body: UpdateDishModel, db: Session):
     dish = db.query(Dish).filter(Dish.id == body.id).first()
+    
     if body.dish_name:
         dish.dish_name = body.dish_name
     if body.description:

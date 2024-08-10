@@ -4,11 +4,14 @@ import asyncio
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request, status, Header
+from fastapi.responses import HTMLResponse
 from fastapi.middleware import Middleware
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.sessions import SessionMiddleware
 from httpx import AsyncClient
 from pyngrok import ngrok
 
+from src.conf.config import settings
 from src.routes import (bot_actions,  
                         dishes, 
                         categories, 
@@ -49,6 +52,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.add_middleware(SessionMiddleware, secret_key=settings.api_secret_key)
+
 
 
 app.include_router(bot_actions.router, prefix='/api')
@@ -68,10 +73,93 @@ app.include_router(stop_list.router, prefix="/api")
 TELEGRAM_SET_WEBHOOK_URL = f"https://api.telegram.org/bot{TG_API_KEY_FOR_USERS}/setWebhook" #?url=https://{whook}/api/bot_actions/webhook
 
 
+
+@app.get('/')
+async def root():
+    return HTMLResponse('<body><a href="/api/auth/goog_login">Log In</a></body>')
+
+
 @app.get('/hello/', status_code=status.HTTP_200_OK)
 async def hello():
     message = {'message': 'hello!'}
     return message
+
+
+@app.get('/token')
+async def token(request: Request):
+    return HTMLResponse('''
+                <script>
+                function send(){
+                    var req = new XMLHttpRequest();
+                    req.onreadystatechange = function() {
+                        if (req.readyState === 4) {
+                            console.log(req.response);
+                            if (req.response["result"] === true) {
+                                window.localStorage.setItem('jwt', req.response["access_token"]);
+                                window.localStorage.setItem('refresh', req.response["refresh_token"]);
+                            }
+                        }
+                    }
+                    req.withCredentials = true;
+                    req.responseType = 'json';
+                    req.open("get", "/api/auth/token?"+window.location.search.substr(1), true);
+                    req.send("");
+
+                }
+                </script>
+                <button onClick="send()">Get FastAPI JWT Token</button>
+
+                <button onClick='fetch("http://127.0.0.1:7000/api/").then(
+                    (r)=>r.json()).then((msg)=>{console.log(msg)});'>
+                Call Unprotected API
+                </button>
+                <button onClick='fetch("http://127.0.0.1:7000/api/protected").then(
+                    (r)=>r.json()).then((msg)=>{console.log(msg)});'>
+                Call Protected API without JWT
+                </button>
+                <button onClick='fetch("http://127.0.0.1:7000/api/protected",{
+                    headers:{
+                        "Authorization": "Bearer " + window.localStorage.getItem("jwt")
+                    },
+                }).then((r)=>r.json()).then((msg)=>{console.log(msg)});'>
+                Call Protected API wit JWT
+                </button>
+
+                <button onClick='fetch("http://127.0.0.1:7000/logout",{
+                    headers:{
+                        "Authorization": "Bearer " + window.localStorage.getItem("jwt")
+                    },
+                }).then((r)=>r.json()).then((msg)=>{
+                    console.log(msg);
+                    if (msg["result"] === true) {
+                        window.localStorage.removeItem("jwt");
+                    }
+                    });'>
+                Logout
+                </button>
+
+                <button onClick='fetch("http://127.0.0.1:7000/auth/refresh",{
+                    method: "POST",
+                    headers:{
+                        "Authorization": "Bearer " + window.localStorage.getItem("jwt")
+                    },
+                    body:JSON.stringify({
+                        grant_type:\"refresh_token\",
+                        refresh_token:window.localStorage.getItem(\"refresh\")
+                        })
+                }).then((r)=>r.json()).then((msg)=>{
+                    console.log(msg);
+                    if (msg["result"] === true) {
+                        window.localStorage.setItem("jwt", msg["access_token"]);
+                    }
+                    });'>
+                Refresh
+                </button>
+
+            ''')
+
+
+
 
 
 async def request(url: str):#, payload: dict, debug: bool = False):

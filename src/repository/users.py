@@ -1,12 +1,13 @@
 import os
+from random import randint
 
 from dotenv import load_dotenv
 from fastapi import status, HTTPException
 from sqlalchemy.orm import Session
 
-from src.schemas import UserResponseModel, UserModel, UserRegistrationBase
+from src.schemas import UserResponseModel, UserModel, UserRegistrationBase, GoogleAuthResp
 from src.database.models import  User, Token
-from src.services.auth import auth_service
+
 from src.repository.tags import find_tags
 
 
@@ -50,13 +51,19 @@ async def delete_user(id: int, db: Session):
     return {"message": "OK"}
 
 
-async def create_user(body: UserRegistrationBase, db: Session):
+async def create_user(body: UserRegistrationBase, db: Session, bot_auth_code: str):
 
+    from src.services.auth import auth_service
+    
     users = db.query(User).all()
     hash_password = auth_service.get_password_hash(body.password)
+    hash_code = auth_service.get_password_hash(bot_auth_code)
     user = User(
+        first_name = body.first_name,
+        last_name = body.last_name,
         email = body.email,
         password = hash_password,
+        secret_code = hash_code
     )
 
     if not users:
@@ -66,7 +73,27 @@ async def create_user(body: UserRegistrationBase, db: Session):
     db.commit()
     response_user = db.query(User).order_by(User.id.desc()).first()
 
-    return response_user
+    return user
+
+async def create_user_by_google_cred(data: GoogleAuthResp, db: Session, bot_auth_code: str):
+    from src.services.auth import auth_service
+    
+    users = db.query(User).all()
+    hash_code = auth_service.get_password_hash(bot_auth_code)
+    user = User(
+        first_name = data.given_name,
+        last_name = data.family_name,
+        email = data.email,
+        secret_code = hash_code
+    )
+
+    if not users:
+        user.role = 'admin'
+
+    db.add(user)
+    db.commit()
+
+    return user
 
 
 async def get_user_by_email(email: str, db: Session):

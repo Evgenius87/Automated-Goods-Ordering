@@ -10,13 +10,16 @@ from src.database.db_connection import get_db
 from src.database.models import Dish, Category
 from src.repository import dishes, ingredients
 from src.services.images import image_cloudinary, resize_image
+from src.services.roles import access_A, access_ABC, access_ABCU
 
 
 router = APIRouter(prefix='/ingredients', tags=["Ingredients"])
 
 
 
-@router.get("/", response_model=list[IngredientResponseModel])
+@router.get("/", 
+            dependencies=[Depends(access_ABCU)],
+            response_model=list[IngredientResponseModel])
 async def get_all_ingredients(db: Session = Depends(get_db)):
     ingredients_list = await ingredients.get_all_ingredients(db)
     if ingredients_list is None:
@@ -26,7 +29,9 @@ async def get_all_ingredients(db: Session = Depends(get_db)):
     return ingredients_list
 
 
-@router.get("/orders", response_model=list[OrederIngByProvider])
+@router.get("/orders", 
+            dependencies=[Depends(access_ABC)],
+            response_model=list[OrederIngByProvider])
 async def get_orders(db: Session = Depends(get_db)):
     order_list = await ingredients.get_order(db)
     if not order_list:
@@ -36,7 +41,9 @@ async def get_orders(db: Session = Depends(get_db)):
     return order_list
 
 
-@router.get("/{ingredient_id}", response_model=IngredientResponseModel)
+@router.get("/{ingredient_id}", 
+            dependencies=[Depends(access_ABC)],
+            response_model=IngredientResponseModel)
 async def get_ingredient(ingredient_id: int, db: Session = Depends(get_db)):
     ingredient = await ingredients.get_ingredient(ingredient_id, db)
     if ingredient is None:
@@ -46,7 +53,9 @@ async def get_ingredient(ingredient_id: int, db: Session = Depends(get_db)):
     return ingredient
 
 
-@router.get("/create_ingredients/{num}", response_model=list[IngredientResponseModel])
+@router.get("/create_ingredients/{num}", 
+            dependencies=[Depends(access_ABC)],
+            response_model=list[IngredientResponseModel])
 async def create_ingregients(num: int, db: Session=Depends(get_db)):
     print("routs/create_ingredients")
     new_ingredients = await ingredients.create_ingredients(db)
@@ -57,13 +66,16 @@ async def create_ingregients(num: int, db: Session=Depends(get_db)):
     return new_ingredients
 
 
-@router.post("/send_orders")
+@router.post("/send_orders",
+             dependencies=[Depends(access_ABC)],)
 async def send_orders(body: list[OrederIngByProvider], 
                       db: Session = Depends(get_db)):
     return await ingredients.send_order_to_provider(body, db)
 
 
-@router.patch("/patch", response_model=IngredientResponseModel)
+@router.patch("/patch", 
+              dependencies=[Depends(access_ABC)],
+              response_model=IngredientResponseModel)
 async def patch_ingredient(body: IngredientUpdateModel, 
                            db: Session = Depends(get_db)):
     ingredient = await ingredients.patch_ingredient(body, db)
@@ -74,6 +86,6 @@ async def patch_ingredient(body: IngredientUpdateModel,
     return ingredient
 
 
-@router.delete("/delete_all")
-async def delete_ingredients(db: Session=Depends(get_db)):
-    return await ingredients.delete_all(db)
+# @router.delete("/delete_all")
+# async def delete_ingredients(db: Session=Depends(get_db)):
+#     return await ingredients.delete_all(db)

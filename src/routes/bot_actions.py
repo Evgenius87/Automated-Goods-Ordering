@@ -26,6 +26,7 @@ router = APIRouter(prefix='/bot_actions', tags=["Bot"])
 
 @router.post('/webhook/to_users', response_model=OkResponseModel)
 async def root(obj: BotUpdateModel, db: Session = Depends(get_db)):
+    # print(await obj.json())
     bot_handler_chain = await bot_request_handler_chain()
     response = await bot_handler_chain.handle_request(obj, db)
     return {'message': 'ok'}
@@ -33,10 +34,6 @@ async def root(obj: BotUpdateModel, db: Session = Depends(get_db)):
 
 @router.post('/webhook/to_providers', response_model=OkResponseModel)
 async def root(obj: BotUpdateModel, db: Session = Depends(get_db)):
-    # response = json.dumps(obj)
-    # pprint(obj)
-    # print("##############################")
-    # pprint(response)
     bot_handler_chain = await providers_bot_request_handler_chain()
     response = await bot_handler_chain.handle_request(obj, db)
     return {'message': 'ok'}

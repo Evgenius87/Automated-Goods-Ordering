@@ -1,4 +1,5 @@
 import pickle
+import logging
 # import redis
 
 from typing import Optional
@@ -16,10 +17,12 @@ from src.repository import users as repository_users
 from src.conf.config import settings
 
 
+logger = logging.getLogger(__name__)
+
 class Auth:
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
     SECRET_KEY = settings.secret_key
-    ALOGORITHM = settings.algorithm
+    ALGORITHM = settings.algorithm
     oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
     # r = redis.Redis(host=settings.redis_host, port=settings.redis_port, db=0)
 
@@ -64,7 +67,7 @@ class Auth:
         else:
             expire = datetime.utcnow() + timedelta(minutes=15)
         to_encode.update({"iat": datetime.utcnow(), "exp": expire, "scope": "access_token"})
-        encoded_access_token = jwt.encode(to_encode, self.SECRET_KEY, algorithm=self.ALOGORITHM)
+        encoded_access_token = jwt.encode(to_encode, self.SECRET_KEY, algorithm=self.ALGORITHM)
         return encoded_access_token
     
 
@@ -97,7 +100,7 @@ class Auth:
         else:
             expire = datetime.utcnow() + timedelta(days=30)
         to_encode.update({"iat": datetime.utcnow(), "exp": expire, "scope": "refresh_token"})
-        encoded_refresh_token = jwt.encode(to_encode, self.SECRET_KEY, algorithm=self.ALOGORITHM)
+        encoded_refresh_token = jwt.encode(to_encode, self.SECRET_KEY, algorithm=self.ALGORITHM)
         return encoded_refresh_token
     
 
@@ -128,6 +131,8 @@ class Auth:
         :param db: Session: Get the database session
         :return: The user object
         """
+        logging.basicConfig(filename='get_current_user',
+                            level=logging.INFO)
         credentials_exception = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
@@ -135,7 +140,7 @@ class Auth:
         )
 
         try:
-            payload = jwt.encode(token, self.SECRET_KEY, algorithm=self.ALOGORITHM)
+            payload = jwt.decode(token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
             if payload["scope"] == "access_token":
                 email = payload["sub"]
                 if email is None:
@@ -145,6 +150,7 @@ class Auth:
         except JWTError as e:
             raise credentials_exception
         user = await repository_users.get_user_by_email(email, db)
+        logger.info(f"user = {user.email}")
         # user = self.r.get(f"user:{email}")
         # if user is None:
         #     user = await repository_users.get_user_by_email(email, db)
@@ -161,23 +167,30 @@ class Auth:
         to_encode = data.copy()
         expire = datetime.utcnow() + timedelta(days=7)
         to_encode.update({"iat": datetime.utcnow(), "exp": expire})
-        token = jwt.encode(to_encode, self.SECRET_KEY, algorithm=self.ALOGORITHM)
+        token = jwt.encode(to_encode, self.SECRET_KEY, algorithm=self.ALGORITHM)
         return token
     
 
     async def get_email_from_token(self, token: str):
         try:
-            payload = jwt.decode(token, self.SECRET_KEY, algorithms=[self.ALOGORITHM])
+            payload = jwt.decode(token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
             email = payload["sub"]
             return email
         except JWTError as e:
             print(e)
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                                 detail="Invalid token for email verification")
+        
             
+    async def get_email_from_token(self, token: str):
+        try:
+            payload = jwt.decode(token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
+            email = payload["sub"]
+            return email
+        except JWTError as e:
+            print(e)
+            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                                detail="Invalid token for email verification")
 
-
-
-    
     
 auth_service = Auth()

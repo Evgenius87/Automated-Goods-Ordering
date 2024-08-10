@@ -1,0 +1,16 @@
+INFO:src.services.auth:user = test_user@gmail.com
+INFO:src.services.auth:user = test_user@gmail.com
+INFO:src.services.auth:user = test_user@gmail.com
+INFO:src.services.auth:user = test_user@gmail.com
+INFO:src.services.auth:user = test_user@gmail.com
+INFO:src.services.auth:user = user@mail.com
+INFO:src.services.auth:user = user@mail.com
+INFO:src.services.auth:user = user@mail.com
+INFO:src.services.auth:user = user@mail.com
+INFO:src.services.auth:user = user@mail.com
+INFO:src.services.auth:user = user2@gmail.com
+INFO:src.services.auth:user = user2@gmail.com
+INFO:src.services.auth:user = admin@mail.com
+INFO:src.services.auth:user = admin@mail.com
+INFO:src.services.auth:user = admin@mail.com
+INFO:src.services.auth:user = admin@mail.com

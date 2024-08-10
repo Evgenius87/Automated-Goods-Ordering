@@ -61,16 +61,16 @@ async def patch_user(body: UserUpdateModel, db: Session = Depends(get_db)):
     return user
 
 
-# @router.delete('/delete', response_model=OkResponseModel,
-#                 dependencies=[Depends(access_A)],
-#                 status_code=status.HTTP_202_ACCEPTED)
-# async def del_all_users(db: Session = Depends(get_db)):
-#     users = db.query(User).all()
-#     for user in users:
-#         db.delete(user)
-#         db.commit()
+@router.delete('/delete', response_model=OkResponseModel,
+                #dependencies=[Depends(access_A)],
+                status_code=status.HTTP_202_ACCEPTED)
+async def del_all_users(db: Session = Depends(get_db)):
+    users = db.query(User).all()
+    for user in users:
+        db.delete(user)
+        db.commit()
 
-#     return {'message': 'ok'}
+    return {'message': 'ok'}
 
 
 @router.delete("/delete/{id}",

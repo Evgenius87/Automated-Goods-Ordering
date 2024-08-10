@@ -26,6 +26,9 @@ class Settings(BaseSettings):
     resto_storage_url: str
     resto_nomenclature_url: str
     resto_products_url: str
+    google_client_id: str
+    google_client_secret: str
+    api_secret_key: str
 
     class Config:
         env_file = ".env"

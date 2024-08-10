@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Password Reset</title>
+</head>
+<body>
+<p>Привіт {{username}},</p>
+<p>Дякуємо, що зареєструвалися в нашому сервісі</p>
+<p>Будь ласка, клацніть це посилання, щоб підтвердити свою електронну адресу:</p>
+<p>
+    <a href="{{host}}api/auth/confirmed_email/{{token}}">
+        Verification
+    </a>
+</p>
+<p>Будь ласка, клацніть це посилання, щоб зареєструватись в нашому телеграм боті</p>
+<p>Код реєстрації: {{code}}</p>
+<p>
+    <a href="https://t.me/DynamoCompanionBot">
+        Dynamo Companion Bot
+    </a>
+</p>
+<p>Дякуємо,</p>
+<p>The AGO Team</p>
+</body>
+</html>
