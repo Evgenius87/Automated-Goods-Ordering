@@ -172,6 +172,6 @@ class IikoAPIHandler:
 # # print(storage_balance)
 
 # for obj in storage_balance:
-#     if "Молоко" in obj.get("name"):
+#     if "віскі" in obj.get("name"):
 #         print(obj)
 

@@ -1,5 +1,6 @@
-from pathlib import Path
+import logging
 
+from pathlib import Path
 
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
 from fastapi_mail.errors import ConnectionErrors
@@ -22,6 +23,9 @@ conf = ConnectionConfig(
     TEMPLATE_FOLDER=Path(__file__).parent / 'templates',
 )
 
+logger = logging.getLogger(__name__)
+
+
 
 async def send_email(email: EmailStr, user: str, host: str, bot_auth_code: str):
     """
@@ -36,6 +40,8 @@ async def send_email(email: EmailStr, user: str, host: str, bot_auth_code: str):
     :param host: str: Pass the hostname of the server to the template
     :return: A coroutine, which is a special kind of object that can be used in an async context
     """
+    logging.basicConfig(level=logging.INFO)
+    logger.info('start send_email')
     try:
         token_verification = auth_service.create_email_token({"sub": email})
         message = MessageSchema(
@@ -49,3 +55,4 @@ async def send_email(email: EmailStr, user: str, host: str, bot_auth_code: str):
         await fm.send_message(message, template_name="email_template.html")
     except ConnectionErrors as err:
         print(err)
+        logger.info('send email FALL')

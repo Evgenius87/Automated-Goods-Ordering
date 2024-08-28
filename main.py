@@ -36,12 +36,20 @@ header = Header({"ngrok-skip-browser-warning": True})
 origins = ["http://172.25.8.7:3000/React-cocktails",
             "http://localhost:3000/React-cocktails",
             "https://andrijdudar.github.io/React-cocktails/", 
-            "http://localhost:3000", "http://localhost:3000/React-cocktails", 
+            "http://localhost:3000", 
+            "http://localhost:3000/React-cocktails", 
             "http://localhost:8000", 
             "https://fb64-46-119-118-70.ngrok.io/api/grids/",
             "https://andrijdudar.github.io/React-cocktails/",
-            "https://andrijdudar.github.io"
-            
+            "https://andrijdudar.github.io",
+            "https://194.44.160.206:0",
+            "http://172.25.9.70:3000/lazy-barmen",
+            "https://andrijdudar.github.io/lazy-barmen/#/login",
+            "https://andrijdudar.github.io/lazy-barmen",
+            "https://andrijdudar.github.io/lazy-barmen/#",
+            "https://andrijdudar.github.io/lazy-barmen/#/login/",
+            "https://andrijdudar.github.io/lazy-barmen/",
+            "https://andrijdudar.github.io/lazy-barmen/#/",
            ] 
 
 app.add_middleware(
@@ -76,7 +84,9 @@ TELEGRAM_SET_WEBHOOK_URL = f"https://api.telegram.org/bot{TG_API_KEY_FOR_USERS}/
 
 @app.get('/')
 async def root():
-    return HTMLResponse('<body><a href="/api/auth/goog_login">Log In</a></body>')
+    return HTMLResponse('''<body><a href="/api/auth/google_login">Log In</a>
+                        <a href="/api/auth/google_logout">Logout</a></body>''')
+                        
 
 
 @app.get('/hello/', status_code=status.HTTP_200_OK)
@@ -125,7 +135,20 @@ async def token(request: Request):
                 Call Protected API wit JWT
                 </button>
 
-                <button onClick='fetch("http://127.0.0.1:7000/logout",{
+                <button onClick='fetch("http://127.0.0.1:8000/api/auth/google_logout",{
+                    headers:{
+                        "Authorization": "Bearer " + window.localStorage.getItem("jwt")
+                    },
+                }).then((r)=>r.json()).then((msg)=>{
+                    console.log(msg);
+                    if (msg["result"] === true) {
+                        window.localStorage.removeItem("jwt");
+                    }
+                    });'>
+                Google_Logout
+                </button>
+                
+                 <button onClick='fetch("http://127.0.0.1:8000/api/auth/logout",{
                     headers:{
                         "Authorization": "Bearer " + window.localStorage.getItem("jwt")
                     },

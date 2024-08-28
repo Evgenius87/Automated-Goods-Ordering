@@ -29,6 +29,7 @@ class Settings(BaseSettings):
     google_client_id: str
     google_client_secret: str
     api_secret_key: str
+    home_page: str
 
     class Config:
         env_file = ".env"

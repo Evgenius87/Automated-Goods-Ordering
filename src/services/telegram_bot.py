@@ -70,7 +70,7 @@ class TelegramBot:
                                home=True):
         print("bot/make_bot_buttons")
         chat_id = request.message.from_tg.chat_id
-        text = request.message.text or ""
+        text = ""
         buttons = []
         for name in name_of_buttons:
             n = []

@@ -61,7 +61,7 @@ class Dish(Base):
     description = Column(String(900))
     dish_ingredients = relationship("Dish_M2M_Ingredients", back_populates="dish")
     dish_premixes = relationship("Dish_M2M_Premixes", back_populates="dish")
-    comments = relationship('Comment', backref="dishes")
+    comments = relationship('Comment', back_populates="dish")
     tags = relationship("Tag", secondary=dish_m2m_tag, back_populates="dishes")
     stop_list = Column(Boolean)
     runing_out = Column(Boolean)
@@ -127,9 +127,10 @@ class Comment(Base):
     __tablename__ = "comments"
     id = Column(Integer, primary_key=True)
     comment = Column(String(955), nullable=False)
-    user_id = Column("user_id", ForeignKey('users.id', ondelete='CASCADE'), default=None)
-    username = relationship("User", backref="comments")
-    dish_id = Column("dish_id", ForeignKey("dishes.id", ondelete="CASCADE"), default=None)
+    user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'))
+    user = relationship("User", backref="comments")
+    dish_id = Column(Integer, ForeignKey('dishes.id', ondelete='CASCADE'))
+    dish = relationship("Dish", back_populates="comments")
     created_at = Column("created_at", DateTime, default=func.now())
     updated_at = Column("updated_at", DateTime, default=func.now(), onupdate=func.now())
 
@@ -164,6 +165,7 @@ class User(Base):
     banned = Column(Boolean, default=False)
     role = Column('role', Enum(Role), default=Role.user)
     information = Column(String, nullable=True)
+    comments = relationship('Comment', back_populates='user')
     forward_provider_message = Column(Boolean, default=False)
     provider = relationship("Provider", back_populates="user")
 

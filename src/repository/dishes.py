@@ -27,11 +27,11 @@ async def get_dish(dish_id: int, db: Session):
 async def add_new_dish(body: DishModel, db: Session):
     if body.tags:
         tags = await find_tags(body.tags, db)
-    category_db = db.query(Category).filter(Category.name == body.category).first()
+    # category_db = db.query(Category).filter(Category.id == body.category_id).first()
     new_dish = Dish(dish_name=body.dish_name, 
                          description=body.description, 
                          tags=tags, 
-                         category_id=category_db.id,
+                         category_id=body.category_id,
                          price=body.price,
                          stop_list = False,
                          runing_out = False,
@@ -40,17 +40,18 @@ async def add_new_dish(body: DishModel, db: Session):
     db.add(new_dish)
     db.commit()
     db.refresh(new_dish)
-    for ingredient_detail in body.ingredients:
-        ingredient = db.query(Ingredient).filter(Ingredient.id == ingredient_detail.id).first()
-        if not ingredient:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                                detail=f"Ingredient with ID {ingredient_detail.id} not found")
-        dish_ingredient = Dish_M2M_Ingredients(
-            dish_id = new_dish.id,
-            ingredient_id = ingredient.id,
-            quantity = ingredient_detail.quantity
-        )
-        db.add(dish_ingredient)
+    if body.ingredients:
+        for ingredient_detail in body.ingredients:
+            ingredient = db.query(Ingredient).filter(Ingredient.id == ingredient_detail.id).first()
+            if not ingredient:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                    detail=f"Ingredient with ID {ingredient_detail.id} not found")
+            dish_ingredient = Dish_M2M_Ingredients(
+                dish_id = new_dish.id,
+                ingredient_id = ingredient.id,
+                quantity = ingredient_detail.quantity
+            )
+            db.add(dish_ingredient)
     if body.premixes:
         for premix_detail in body.premixes:
             premix = db.query(Premix).filter(Premix.id == premix_detail.id).first()

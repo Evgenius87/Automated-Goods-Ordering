@@ -14,3 +14,34 @@ INFO:src.services.auth:user = admin@mail.com
 INFO:src.services.auth:user = admin@mail.com
 INFO:src.services.auth:user = admin@mail.com
 INFO:src.services.auth:user = admin@mail.com
+INFO:src.services.auth:user = plotnikov.evgenij@ukr.net
+INFO:src.services.auth:user = plotnikov.evgenij@ukr.net
+INFO:src.services.auth:user = plotnikov.evgenij@ukr.net
+INFO:src.services.auth:user = plotnikov.evgenij@ukr.net
+INFO:src.services.auth:user = plotnikov.evgenij@ukr.net
+INFO:src.services.auth:user = plotnikov.evgenij@ukr.net
+INFO:src.services.auth:user = plotnikov.evgenij@ukr.net
+INFO:src.services.auth:user = plotnikov.evgenij@ukr.net
+INFO:src.services.auth:user = plotnikov.evgenij@ukr.net
+INFO:src.services.auth:user = plotnikov.evgenij@ukr.net
+INFO:src.services.auth:user = plotnikov.evgenij@ukr.net
+INFO:src.services.auth:user = plotnikov.evgenij@ukr.net
+INFO:src.services.auth:user = plotnikov.evgenij@ukr.net
+INFO:src.services.auth:user = plotnikov.evgenij@ukr.net
+INFO:src.services.auth:user = plotnikov.evgenij@ukr.net
+INFO:src.services.auth:user = plotnikov.evgenij@ukr.net
+INFO:src.services.auth:user = plotnikov.evgenij@ukr.net
+INFO:src.services.auth:user = plotnikov.evgenij@ukr.net
+INFO:src.services.auth:user = plotnikov.evgenij@ukr.net
+INFO:httpx:HTTP Request: GET https://accounts.google.com/.well-known/openid-configuration "HTTP/1.1 200 OK"
+INFO:src.routes.auth:token work
+INFO:httpx:HTTP Request: POST https://oauth2.googleapis.com/token "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.googleapis.com/oauth2/v3/certs "HTTP/1.1 200 OK"
+INFO:src.services.email:start send_email
+INFO:src.services.auth:user = plotnikov.evgenij@ukr.net
+INFO:src.services.auth:user = plotnikov.evgenij@ukr.net
+INFO:src.services.auth:user = plotnikov.evgenij@ukr.net
+INFO:src.services.auth:user = plotnikov.evgenij@ukr.net
+INFO:httpx:HTTP Request: GET https://accounts.google.com/.well-known/openid-configuration "HTTP/1.1 200 OK"
+INFO:src.services.auth:user = plotnikov.evgenij@ukr.net
+INFO:httpx:HTTP Request: GET https://accounts.google.com/.well-known/openid-configuration "HTTP/1.1 200 OK"

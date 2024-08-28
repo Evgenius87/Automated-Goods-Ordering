@@ -109,7 +109,6 @@ class ProviderModel(BaseModel):
 #############################################
 class IngredientModel(BaseModel):
     id: int
-    name: str
     quantity: float
 
 
@@ -203,7 +202,6 @@ class UpdatePremixModel(BaseModel):
 
 class PremixToDishModel(BaseModel):
     id: int
-    name: str
     quantity: float
 
     class Config:
@@ -225,11 +223,11 @@ class DishM2MPremixes(BaseModel):
 
 class DishModel(BaseModel):
     dish_name: str
-    description: Optional[str] = None
-    ingredients: list[IngredientModel]
+    description: Optional[Optional[str]] = None
+    ingredients: Optional[list[IngredientModel]]
     premixes: Optional[list[PremixToDishModel]] = None
     tags: Optional[list[str]] = None
-    category: str 
+    category_id: int 
     price: int = None
 
 
@@ -239,10 +237,9 @@ class DishResponseModel(BaseModel):
     image_public_id: Any
     dish_name: str
     description: Any
-    dish_ingredients: list[DishM2MIngredients]
+    dish_ingredients: Optional[list[DishM2MIngredients]]
     dish_premixes: Optional[list[DishM2MPremixes]] = Any
-    comments: Optional[list[CommentResponseModel]]
-    tags: list[TagResponseModel] = Any
+    tags: Optional[list[TagResponseModel]] = Any
     stop_list: Any
     runing_out: Any
     need_to_sold: Any
@@ -262,7 +259,6 @@ class UpdateDishModel(BaseModel):
     id: int
     dish_name: Optional[str]
     description: Optional[str] = None
-    comment: Optional[str] =None
     ingredients: Optional[list[IngredientModel]]
     premixes: Optional[list[PremixToDishModel]] = None
     tags: Optional[list[str]] = None
@@ -319,12 +315,10 @@ class HelloResponsemodel(BaseModel):
     BotMessage: str
 
 
-class UploadTextModel(BaseModel):
-    message: str
+#########################################
 
 class CommentModel(BaseModel):
     comment: str
-    user_id: int
     dish_id: int
 
 class CommentResponeModel(BaseModel):
@@ -332,6 +326,13 @@ class CommentResponeModel(BaseModel):
     comment: str
     user_id: int
     dish_id: int
+    created_at: datetime
+    updated_at: Optional[datetime] = Any
+
+class CommentUpdateModel(BaseModel):
+    id: int
+    comment: str
+
 
 ################################################
     
