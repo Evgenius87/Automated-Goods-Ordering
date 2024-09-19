@@ -31,7 +31,7 @@ TG_API_KEY_FOR_USERS = os.getenv("BOT_TOKEN")
 TG_API_KEY_FOR_PROVIDERS = os.getenv("BOT_TOKEN_PRO")
 
 app = FastAPI()
-header = Header({"ngrok-skip-browser-warning": True})
+# header = Header({"ngrok-skip-browser-warning": True})
 
 origins = ["http://172.25.8.7:3000/React-cocktails",
             "http://localhost:3000/React-cocktails",
@@ -119,21 +119,6 @@ async def token(request: Request):
                 </script>
                 <button onClick="send()">Get FastAPI JWT Token</button>
 
-                <button onClick='fetch("http://127.0.0.1:7000/api/").then(
-                    (r)=>r.json()).then((msg)=>{console.log(msg)});'>
-                Call Unprotected API
-                </button>
-                <button onClick='fetch("http://127.0.0.1:7000/api/protected").then(
-                    (r)=>r.json()).then((msg)=>{console.log(msg)});'>
-                Call Protected API without JWT
-                </button>
-                <button onClick='fetch("http://127.0.0.1:7000/api/protected",{
-                    headers:{
-                        "Authorization": "Bearer " + window.localStorage.getItem("jwt")
-                    },
-                }).then((r)=>r.json()).then((msg)=>{console.log(msg)});'>
-                Call Protected API wit JWT
-                </button>
 
                 <button onClick='fetch("http://127.0.0.1:8000/api/auth/google_logout",{
                     headers:{
@@ -178,6 +163,26 @@ async def token(request: Request):
                     });'>
                 Refresh
                 </button>
+                # <script>
+                # function send(){
+                #     var req = new XMLHttpRequest();
+                #     req.onreadystatechange = function() {
+                #         if (req.readyState === 4) {
+                #             console.log(req.response);
+                #             if (req.response["result"] === true) {
+                #                 window.localStorage.setItem('jwt', req.response["access_token"]);
+                #                 window.localStorage.setItem('refresh', req.response["refresh_token"]);
+                #             }
+                #         }
+                #     }
+                #     req.withCredentials = true;
+                #     req.responseType = 'json';
+                #     req.open("get", "/api/users/me?"+window.location.search.substr(1), true);
+                #     req.send("");
+
+                # }
+                # </script>
+                # <button onClick="send()">Get Me</button>
 
             ''')
 

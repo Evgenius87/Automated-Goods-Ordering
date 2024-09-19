@@ -128,7 +128,7 @@ class Comment(Base):
     id = Column(Integer, primary_key=True)
     comment = Column(String(955), nullable=False)
     user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'))
-    user = relationship("User", backref="comments")
+    user = relationship("User", back_populates="comments")
     dish_id = Column(Integer, ForeignKey('dishes.id', ondelete='CASCADE'))
     dish = relationship("Dish", back_populates="comments")
     created_at = Column("created_at", DateTime, default=func.now())

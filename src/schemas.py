@@ -437,7 +437,6 @@ class RequestEmail(BaseModel):
 
 
 class GoogleAuthResp(BaseModel):
-    at_hash: Optional[str]
     aud: Optional[str]
     azp: Optional[str]
     email: Optional[str]
@@ -455,6 +454,12 @@ class GoogleAuthResp(BaseModel):
     class Config:
         orm_mode = True
         from_attributes = True
+
+
+#################################
+
+class AuthCodeModel(BaseModel):
+    auth_code: str
 
 
 

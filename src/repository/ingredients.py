@@ -11,6 +11,7 @@ from src.services.telegram_bot import TelegramBot
 from src.repository.tags import find_tags
 from src.services.handler_errors import handle_errors
 
+from src.repository import dishes as repository_dishes
 
 
 
@@ -63,9 +64,9 @@ async def update_ingerdients(db: Session):
     for obj in data:
         ingredient = db.query(Ingredient).filter(Ingredient.product_id == obj.get("product")).first()
         if ingredient:
-            # ingredient.name = obj.get("name")
             ingredient.amount = obj.get("amount")
             ingredient.suma = obj.get("sum")
+            # await repository_dishes.check_dishes_for_stop_list(ingredient, db)
             db.commit()
             continue
         else:
@@ -83,6 +84,7 @@ async def update_ingerdients(db: Session):
 
 async def calculate_order(standart_container: float, stock_maximum: float, amount: float) -> int:
     return round((stock_maximum - amount)/standart_container)
+
 
 @handle_errors
 async def get_order(db: Session):
@@ -149,23 +151,24 @@ async def send_order_to_provider(body: list[OrederIngByProvider], db: Session):
         await telegram_bot.send_home(request)
     return {"Message": "The order has been sent successfully"}
 
-@handle_errors
-async def create_ingredients(db: Session):
-    print("repository/create_ingredients")
-    iiko_server = IikoAPIHandler()
-    storage_balance = iiko_server.get_storage_balance()
-    for obj in storage_balance:
-        new_ingredient = Ingredient(
-                name = obj.get("name"),
-                product_id = obj.get("product"),
-                amount = obj.get("amount"),
-                suma = obj.get("sum"),
-                using = True
-                    )
-        db.add(new_ingredient)
-        db.commit()
-    ingredients = db.query(Ingredient).all()
-    return ingredients
+
+# @handle_errors
+# async def create_ingredients(db: Session):
+#     print("repository/create_ingredients")
+#     iiko_server = IikoAPIHandler()
+#     storage_balance = iiko_server.get_storage_balance()
+#     for obj in storage_balance:
+#         new_ingredient = Ingredient(
+#                 name = obj.get("name"),
+#                 product_id = obj.get("product"),
+#                 amount = obj.get("amount"),
+#                 suma = obj.get("sum"),
+#                 using = True
+#                     )
+#         db.add(new_ingredient)
+#         db.commit()
+#     ingredients = db.query(Ingredient).all()
+#     return ingredients
         
 
 @handle_errors

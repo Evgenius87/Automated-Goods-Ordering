@@ -34,6 +34,7 @@ class TelegramBot:
 
 
     async def send_bot_message(self, data: dict):
+        print(f"data = {data}")
         print("bot/send_bot_message")
         async with ClientSession() as session:
             async with session.post(self.SEND_MESSAGE_URL, data=data) as response:
@@ -70,7 +71,7 @@ class TelegramBot:
                                home=True):
         print("bot/make_bot_buttons")
         chat_id = request.message.from_tg.chat_id
-        text = ""
+        text = "🇺🇦"
         buttons = []
         for name in name_of_buttons:
             n = []
@@ -175,5 +176,5 @@ class TelegramBot:
 
         async with ClientSession() as session:
             async with session.post(self.DELETE_MESSAGE_URL, data=data) as response:
-                result = {'message': 'send'}
+                result = {'message': 'deleted'}
         return result

@@ -52,22 +52,25 @@ async def verify_user(request: BotUpdateModel, db: Session):
     for user in users:
 
         if auth_service.verify_password(request_message, user.secret_code):
-            print(f"XXXXX{request_message}XXXX{user.secret_code}")
-            user.chat_id = request_chat_id
-
-            if request.message.from_tg.username:
-                user.username = request.message.from_tg.username
+            try:
+                # user.chat_id = request_chat_id
+                if request.message.from_tg.username:
+                    user.username = request.message.from_tg.username
+            
+                db.commit()
+                db.refresh(user)
+                positive_message = f'Вітаю, {user.first_name}.\nВи успішно зарегістровані'
+                await bot.delete_message(request.message.from_tg.chat_id, request.message.message_id)
+                await bot.send_message(request_chat_id, positive_message)
+                return await bot.send_home(request)
+                print("hi")
+            except BaseException as e:
+                await bot.send_message(request_chat_id, 
+                                       "Нажаль не вдалось Вас зареєструвати. \nМожливо Ваш телеграм аккаунт вже зареєстрований в нашому застосунку ")
         
-            db.commit()
-            db.refresh(user)
-            positive_message = f'Вітаю, {user.first_name}.\nВи успішно зарегістровані'
-            await bot.delete_message(request.message.from_tg.chat_id, request.message.message_id)
-            await bot.send_message(request_chat_id, positive_message)
-            return await bot.send_home(request)
         
-        else:
-            await bot.send_message(request_chat_id, NEGATIVE_MESSAGE)
-            await bot.send_message_to_reply(request_chat_id, ENTER_PASSWORD_MESSAGE, PASSWORD_PLACEHOLDER)
+    await bot.send_message(request_chat_id, NEGATIVE_MESSAGE)
+    await bot.send_message_to_reply(request_chat_id, ENTER_PASSWORD_MESSAGE, PASSWORD_PLACEHOLDER)
 
     return {"message": "ok"}
 
@@ -75,49 +78,13 @@ async def verify_user(request: BotUpdateModel, db: Session):
 @bot_exceptions
 async def bot_start(request: BotUpdateModel, db: Session) -> dict:
     chat_id = request.message.from_tg.chat_id
-    user = await get_current_user(request, db)
+    # user = await get_current_user(request, db)
+    user = None
     if not user:
         await bot.send_message(chat_id, HELLO_MESSAGE)
         return await bot.send_message_to_reply(chat_id, ENTER_PASSWORD_MESSAGE, PASSWORD_PLACEHOLDER)
     if user:
         return await bot.send_home(request)
-
-
-# @bot_exceptions
-# async def send_message(request: BotUpdateModel, text: str) -> dict:
-#     return await bot.send_message(request.message.from_tg.chat_id, text)
-
-
-# @bot_exceptions
-# async def create_new_user(request: BotUpdateModel, db: Session) -> dict:
-#     user = User(username=request.message.from_tg.username, 
-#                         first_name=request.message.from_tg.first_name,
-#                         last_name=request.message.from_tg.last_name,
-#                         chat_id=request.message.from_tg.chat_id,
-#                         email='',
-#                         password='',
-#                         bot_role='user')
-#     db.add(user)
-#     db.commit()
-#     message = f'вітаю, {user.first_name} {user.last_name}, регістрація пройшла успішно'
-#     await bot.send_message(request.message.from_tg.chat_id, message)
-#     return await bot.send_home(request)
-
-
-# @bot_exceptions
-# async def admin_registration(request: BotUpdateModel, db: Session) -> dict:
-#     user = User(username=request.message.from_tg.username, 
-#                         first_name=request.message.from_tg.first_name,
-#                         last_name=request.message.from_tg.last_name,
-#                         chat_id=request.message.from_tg.chat_id,
-#                         email='',
-#                         password='',
-#                         bot_role='admin')
-#     db.add(user)
-#     db.commit()
-#     message = f'вітаю, {request.message.from_tg.first_name} {request.message.from_tg.last_name}, регістрація пройшла успішно'
-#     await bot.send_message(request.message.from_tg.chat_id, message)
-#     return await bot.send_home(request)
 
 
 @bot_exceptions
@@ -200,6 +167,13 @@ async def del_dish_from_stoplist(request: BotUpdateModel, db: Session) -> dict:
 @bot_exceptions
 async def send_home(request: BotUpdateModel):
     return await bot.send_home(request)
+
+
+@bot_exceptions
+async def delete_message(request: BotUpdateModel):
+    message_id = request.message.message_id
+    chat_id = request.message.from_tg.chat_id
+    return await bot.delete_message(chat_id=chat_id, message_id=message_id)
 
 
 

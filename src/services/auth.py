@@ -1,6 +1,4 @@
-import pickle
 import logging
-# import redis
 
 from typing import Optional
 
@@ -113,7 +111,7 @@ class Auth:
         :return: The email of the user
         """
         try:
-            payload = jwt.decode(refresh_token, self.SECRET_KEY, algorithms=self.ALOGORITHM)
+            payload = jwt.decode(refresh_token, self.SECRET_KEY, algorithms=self.ALGORITHM)
             if payload["scope"] == "refresh_token":
                 email = payload["sub"]
                 return email
@@ -131,8 +129,7 @@ class Auth:
         :param db: Session: Get the database session
         :return: The user object
         """
-        logging.basicConfig(filename='get_current_user',
-                            level=logging.INFO)
+        logger.info(f"token = {token}")
         credentials_exception = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
@@ -150,16 +147,7 @@ class Auth:
         except JWTError as e:
             raise credentials_exception
         user = await repository_users.get_user_by_email(email, db)
-        logger.info(f"user = {user.email}")
-        # user = self.r.get(f"user:{email}")
-        # if user is None:
-        #     user = await repository_users.get_user_by_email(email, db)
-        #     if user is None:
-        #         raise credentials_exception
-        #     self.r.set(f"user:{email}", pickle.dumps(user))
-        #     self.r.expire(f"user:{email}", 900)
-        # else:
-        #     user = pickle.loads(user)
+
         return user
     
 

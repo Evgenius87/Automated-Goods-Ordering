@@ -91,9 +91,6 @@ async def patch(body: UpdateDishModel, db: Session):
     if body.category:
         category = db.query(Category).filter(Category.name == body.category).first()
         dish.category_id = category.id
-    if body.comment:
-        new_comment = await comments.create_comment()
-        dish.comments.append(new_comment)
     if body.price:
         dish.price = body.price
     if body.tags:
@@ -154,7 +151,7 @@ async def delete_dish(dish_id: int, db: Session):
 
 
 @handle_errors
-async def find_ingredients_id_in_dish(dish_id: int, db: Session):
+async def find_ingredients_id_of_dish(dish_id: int, db: Session):
     d_m2m_i_list = db.query(Dish_M2M_Ingredients).filter(Dish_M2M_Ingredients.dish_id == dish_id).all()
     ingredients_id = [d_m2m_i.ingredient_id for d_m2m_i in d_m2m_i_list]
     ingredients_id = list(set(ingredients_id))
@@ -182,6 +179,7 @@ async def check_available_ing(ingredients_id: list[int], db: Session):
     if ingredient:
         need_to_sold = True
         return stop_list, runing_out, need_to_sold
+    return stop_list, runing_out, need_to_sold
     
 
 @handle_errors
@@ -189,7 +187,7 @@ async def update_stop_list(db: Session):
     await repository_ing.update_ingerdients(db)
     dishes = db.query(Dish).all()
     for dish in dishes:
-        ingredients_id = await find_ingredients_id_in_dish(dish.id, db)
+        ingredients_id = await find_ingredients_id_of_dish(dish.id, db)
         stop_list, runing_out, need_to_sold = await check_available_ing(ingredients_id, db)
         dish.stop_list = stop_list
         dish.runing_out = runing_out
@@ -198,3 +196,26 @@ async def update_stop_list(db: Session):
         db.refresh(dish)
             
 
+# async def check_dishes_for_stop_list(ingredient: Ingredient, db: Session):
+#     need_to_sold = False
+#     runing_out = False
+#     stop_list = False
+#     if ingredient.min_acceptable > ingredient.amount:
+#         stop_list = True
+#     elif ingredient.min_acceptable < ingredient.amount and ingredient.amount < ingredient.stock_minimum:
+#         runing_out = True
+#     elif ingredient.amount > ingredient.stock_maximum:
+#         need_to_sold = True
+#     d_m2m_i_list = db.query(Dish_M2M_Ingredients).filter(Dish_M2M_Ingredients.ingredient_id == ingredient.id).all()
+#     dishes_id = [d_m2m_i.dish_id for d_m2m_i in d_m2m_i_list]
+#     print(dishes_id)
+#     for dish_id in dishes_id:
+#         dish = await get_dish(dish_id, db)
+#         dish: Dish
+#         print(dish.dish_name)
+#         print(dish.need_to_sold)
+#         dish.need_to_sold = need_to_sold
+#         dish.runing_out = runing_out
+#         dish.stop_list = stop_list
+#         db.commit()
+#         db.refresh(dish)

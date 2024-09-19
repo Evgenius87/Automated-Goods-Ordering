@@ -7,27 +7,24 @@ from fastapi import APIRouter, Depends, status, HTTPException, Security, Backgro
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials, OAuth2PasswordRequestForm
 from fastapi.responses import JSONResponse
 from starlette.responses import RedirectResponse
-from starlette.config import Config
-from authlib.integrations.starlette_client import OAuth, OAuthError
 from sqlalchemy.orm import Session
+from google.oauth2 import id_token
+from google.auth.transport import requests
 
-from src.schemas import UserRegistrationBase, TokenModel, UserResponseModel, OkResponseModel, GoogleAuthResp
+from src.schemas import UserRegistrationBase, TokenModel, AuthCodeModel, OkResponseModel, GoogleAuthResp
 from src.database.db_connection import get_db
 from src.repository import users as repository_users
 from src.database.models import User, Token
 from src.services.auth import auth_service
 from src.services.email import send_email
-from src.schemas import UserModel, TokenModel, RequestEmail
+from src.schemas import TokenModel, RequestEmail
 from src.conf.config import settings
-
-
 
 
 router = APIRouter(prefix='/auth', tags=["Auth"])
 
 security = HTTPBearer()
 
-''' NEW CODE'''
 
 CREDENTIALS_EXCEPTION = HTTPException(
     status_code=status.HTTP_401_UNAUTHORIZED,
@@ -42,90 +39,43 @@ GOOGLE_CLIENT_SECRET = settings.google_client_secret or None
 if GOOGLE_CLIENT_ID is None or GOOGLE_CLIENT_SECRET is None:
     raise BaseException('Missing env variables')
 
-# Set up oauth
-config_data = {'GOOGLE_CLIENT_ID': GOOGLE_CLIENT_ID, 'GOOGLE_CLIENT_SECRET': GOOGLE_CLIENT_SECRET}
-starlette_config = Config(environ=config_data)
-oauth = OAuth(starlette_config)
-oauth.register(
-    name='google',
-    server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
-    client_kwargs={'scope': 'openid email profile'},
-)
-
-FRONTEND_URL = 'http://127.0.0.1:8000/token'
 
 logger = logging.getLogger(__name__)
 
 
-@router.get('/google_login')
-async def login(request: Request):
-    redirect_url = f"{request.base_url}api/auth/token"
-    # redirect_url = request.url_for('token')
-    # redirect_url = "http://127.0.0.1:8000/api/auth/token"#FRONTEND_URL  # This creates the url for our /auth endpoint
-    # redirect_url = "https://andrijdudar.github.io/lazy-barmen"
-    # redirect_url = request.base_url("/api/auth/token")
-    from pprint import pprint
-    print(redirect_url)
-    # pprint(request.__dict__)
-    print("GOOGLE_LOGIN")
-    return await oauth.google.authorize_redirect(request, redirect_url,)
 
+@router.post("/google_auth")
+async def google_auth(request: Request,
+                      background_tasks: BackgroundTasks,
+                      db: Session = Depends(get_db)):
 
-@router.get('/token')
-async def token(request: Request,
-                # response: Response,
-               background_tasks: BackgroundTasks, 
-               db: Session = Depends(get_db)):
-    # print(await oauth.google.authorize_access_token(request))
-    print(f"request = {request}")
-    print(request.headers)
-    logging.basicConfig(level=logging.INFO)
-    logger.info("token work")
-    # logger.info("####################################################3")
-    # logger.info(f"{response.headers}")
-    try:
-        google_token = await oauth.google.authorize_access_token(request)
-        # print(f"google_token:  {google_token}")
-    except OAuthError:
-        raise CREDENTIALS_EXCEPTION
+    data = await request.json()
+    token = data.get('auth_code')
     bot_auth_code = str(randint(1111, 9999))
-    user_data = google_token['userinfo']
-    # print(user_data)
-    user = await repository_users.get_user_by_email(user_data['email'], db)
+
+    if not token:
+        raise HTTPException(status_code=400, detail="Token is missing")
+
+    try:
+        idinfo = id_token.verify_oauth2_token(token, requests.Request(), GOOGLE_CLIENT_ID)
+    except ValueError as e:
+        # Невірний токен
+        raise HTTPException(status_code=400, detail="Invalid token")
+    
+    user = await repository_users.get_user_by_email(idinfo['email'], db)
     if user is None:
-        data = GoogleAuthResp(**user_data)
+        data = GoogleAuthResp(**idinfo)
         user = await repository_users.create_user_by_google_cred(data, db, bot_auth_code)
         background_tasks.add_task(send_email, user.email, user.first_name, request.base_url, bot_auth_code)
-    # Generate JWT
+        
     access_token = await auth_service.create_access_token(data={"sub": user.email})
     refresh_token = await auth_service.create_refresh_token(data={"sub": user.email})
     await repository_users.update_token(user, refresh_token, db)
-    print({"access_token": access_token, "refresh_token": refresh_token, "token_type": "bearer"})
-      # Встановлення куки
-    # response.set_cookie(key="access_token", value=access_token, httponly=True, secure=True)
-
-    # return RedirectResponse(settings.home_page)
-    
-    # return {"access_token": access_token, "refresh_token": refresh_token, "token_type": "bearer"}
-    return RedirectResponse(url='/', )
-
-    return JSONResponse({
-        "result": True,
-        "access_token": access_token,
-        "refresh_token": refresh_token,
-        "token_type": "bearer"
-    })
-
-@router.get('/google_logout') 
-async def logout(request: Request): 
-    print(request)
-    print("###########################")
-    print(request.session)
-    request.session.pop('user', None)
-    return RedirectResponse(url='/')
+    # print({"access_token": access_token, "refresh_token": refresh_token, "token_type": "bearer"})
+    return {"access_token": access_token, "refresh_token": refresh_token, "token_type": "bearer"}
 
 
-'''OLD CODE'''
+
 
 @router.post("/signup", response_model=OkResponseModel, status_code=status.HTTP_201_CREATED)
 async def signup(body: UserRegistrationBase,
@@ -172,11 +122,12 @@ async def logout(token_data: Token = Depends(auth_service.oauth2_scheme),
 async def refresh_token(credentials: HTTPAuthorizationCredentials = Security(security), 
                         db: Session = Depends(get_db)) -> dict | HTTPException:
     token = credentials.credentials
+    print(token)
     email = await auth_service.decode_refresh_token(token)
     user = await repository_users.get_user_by_email(email, db)
     if user.refresh_token != token:
         await repository_users.update_token(user, None, db)
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token")
+        raise CREDENTIALS_EXCEPTION
     
     access_token = await auth_service.create_access_token(data={"sub": email})
     refresh_token = await auth_service.create_refresh_token(data={"sub": email})

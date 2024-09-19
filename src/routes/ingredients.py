@@ -53,17 +53,17 @@ async def get_ingredient(ingredient_id: int, db: Session = Depends(get_db)):
     return ingredient
 
 
-@router.get("/create_ingredients/{num}", 
-            dependencies=[Depends(access_ABC)],
-            response_model=list[IngredientResponseModel])
-async def create_ingregients(num: int, db: Session=Depends(get_db)):
-    print("routs/create_ingredients")
-    new_ingredients = await ingredients.create_ingredients(db)
-    if new_ingredients is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Ingredients not found"
-        )
-    return new_ingredients
+# @router.get("/create_ingredients/{num}", 
+#             dependencies=[Depends(access_ABC)],
+#             response_model=list[IngredientResponseModel])
+# async def create_ingregients(num: int, db: Session=Depends(get_db)):
+#     print("routs/create_ingredients")
+#     new_ingredients = await ingredients.create_ingredients(db)
+#     if new_ingredients is None:
+#         raise HTTPException(
+#             status_code=status.HTTP_404_NOT_FOUND, detail="Ingredients not found"
+#         )
+#     return new_ingredients
 
 
 @router.post("/send_orders",

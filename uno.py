@@ -1,20 +1,23 @@
-import json
 
-l = [
-    {
-        "name": "xxx",
-        "id": 123,
-        "quantity": 0.1
-    },
-    {
-        "name": "www",
-        "id": 124,
-        "quantity": 0.3
-    }
-]
 
-str_l = str(l)
 
-decode_l = list(str_l)
+def check_if(n: int) -> int:
+    if n > 5:
+        print(1)
+    
+    elif n > 2:
+        print(2)
+    
+    elif n > 3:
+        print(3)
+    
+    print("end")
+    return True
+    
 
-print(decode_l)
+if __name__ == "__main__":
+    print(check_if(4))
+
+
+
+
