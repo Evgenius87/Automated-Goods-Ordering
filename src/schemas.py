@@ -1,9 +1,10 @@
 from datetime import datetime
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, EmailStr
 from typing import ClassVar, Annotated
 from fastapi import UploadFile, File
-from src.database.models import Tag
+from src.database.models import Tag, Role
 from typing import Optional, Any, Union
+
 
 
 
@@ -108,7 +109,6 @@ class ProviderModel(BaseModel):
 #############################################
 class IngredientModel(BaseModel):
     id: int
-    name: str
     quantity: float
 
 
@@ -193,9 +193,15 @@ class PremixResponseModel(BaseModel):
         from_attributes = True
 
 
+class UpdatePremixModel(BaseModel):
+    id: int
+    name: Optional[str]
+    ingredients: Optional[list[IngredientModel]]
+    description: Optional[str]
+
+
 class PremixToDishModel(BaseModel):
     id: int
-    name: str
     quantity: float
 
     class Config:
@@ -217,11 +223,11 @@ class DishM2MPremixes(BaseModel):
 
 class DishModel(BaseModel):
     dish_name: str
-    description: Optional[str] = None
-    ingredients: list[IngredientModel]
+    description: Optional[Optional[str]] = None
+    ingredients: Optional[list[IngredientModel]]
     premixes: Optional[list[PremixToDishModel]] = None
     tags: Optional[list[str]] = None
-    category: str 
+    category_id: int 
     price: int = None
 
 
@@ -231,16 +237,15 @@ class DishResponseModel(BaseModel):
     image_public_id: Any
     dish_name: str
     description: Any
-    dish_ingredients: list[DishM2MIngredients]
+    dish_ingredients: Optional[list[DishM2MIngredients]]
     dish_premixes: Optional[list[DishM2MPremixes]] = Any
-    comments: list[CommentResponseModel]
-    tags: list[TagResponseModel] = Any
+    tags: Optional[list[TagResponseModel]] = Any
     stop_list: Any
     runing_out: Any
     need_to_sold: Any
     price: int
     category_name: str = None
-    category_id: int = None
+    category_id: Optional[int] = None
     created_at: datetime
     updated_at: Optional[datetime] = Any
 
@@ -254,7 +259,6 @@ class UpdateDishModel(BaseModel):
     id: int
     dish_name: Optional[str]
     description: Optional[str] = None
-    comment: Optional[str] =None
     ingredients: Optional[list[IngredientModel]]
     premixes: Optional[list[PremixToDishModel]] = None
     tags: Optional[list[str]] = None
@@ -311,12 +315,10 @@ class HelloResponsemodel(BaseModel):
     BotMessage: str
 
 
-class UploadTextModel(BaseModel):
-    message: str
+#########################################
 
 class CommentModel(BaseModel):
     comment: str
-    user_id: int
     dish_id: int
 
 class CommentResponeModel(BaseModel):
@@ -324,6 +326,13 @@ class CommentResponeModel(BaseModel):
     comment: str
     user_id: int
     dish_id: int
+    created_at: datetime
+    updated_at: Optional[datetime] = Any
+
+class CommentUpdateModel(BaseModel):
+    id: int
+    comment: str
+
 
 ################################################
     
@@ -356,15 +365,17 @@ class StopListModel(BaseModel):
 
 ################################################
 
-class UsersResponseModel(BaseModel):
+class UserResponseModel(BaseModel):
     id: int
-    username: str
-    first_name: str
-    last_name: str
+    name: Optional[str]
+    username: Optional[str]
+    first_name: Optional[str]
+    last_name: Optional[str]
     email: str
-    information: str
-    role: str
-    forward_provider_message: bool
+    information: Optional[str]
+    phone: Optional[str] = None
+    role: Role = Field()
+    forward_provider_message: Optional[bool]
 
     class Config:
         orm_mode = True
@@ -376,25 +387,80 @@ class UserModel(BaseModel):
     last_name: str
     phone: str
     email: str
-    # role: str
+    role: Role = Field()
     information: str
     password: str
     refresh_token: str
+    
+    class Config:
+        orm_mode = True
+        from_attributes = True
 
 
-class UserResponseModel(BaseModel):
+class UserUpdateModel(BaseModel):
     id: int
-    # name =Column(String(150), nullable=True)
-    username: str = None
-    first_name: str = None
-    last_name: str = None
-    phone: str = None
-    email: str = None
-    # created_at: str = None
-    refresh_token: str = None
-    banned: bool = None
-    information: str = None
-    forward_provider_message: bool = None
+    name: Optional[str]
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    role: Optional[str] = None
+    banned: Optional[bool] = None
+    information: Optional[str] = None
+    forward_provider_message: Optional[bool] = None
+
+    class Config:
+        orm_mode = True
+        from_attributes = True
+
+
+class UserRegistrationBase(BaseModel):
+    first_name: str
+    last_name: str
+    email: EmailStr
+    password: str = Field(min_length=6)
+
+    class Config:
+        orm_mode = True
+        from_attributes = True
+
+
+class TokenModel(BaseModel):
+    access_token: str
+    refresh_token: str
+    token_type: str
+
+
+
+class RequestEmail(BaseModel):
+    email: EmailStr
+
+
+class GoogleAuthResp(BaseModel):
+    aud: Optional[str]
+    azp: Optional[str]
+    email: Optional[str]
+    email_verified: Optional[bool]
+    exp: Optional[int]
+    family_name: Optional[str]
+    given_name: Optional[str]
+    iat: Optional[int]
+    iss: Optional[str]
+    name: Optional[str]
+    nonce: Optional[str]
+    picture: Optional[str]
+    sub: Optional[str]
+
+    class Config:
+        orm_mode = True
+        from_attributes = True
+
+
+#################################
+
+class AuthCodeModel(BaseModel):
+    auth_code: str
+
 
 
     

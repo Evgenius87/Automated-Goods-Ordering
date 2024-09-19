@@ -62,24 +62,8 @@ class StartHandler(AbstractHandler):
 
 class UserRegistrationHandler(AbstractHandler):
     async def handle_request(self, request: BotUpdateModel, db: Session):
-        if request.message.text == 'зареєструватись як user':
-            return await bot_contents.create_new_user(request, db)
-        elif hasattr(self, "_next_handler"):
-            await self._next_handler.handle_request(request, db)
-
-
-class SecretCheckHandler(AbstractHandler):
-    async def handle_request(self, request: BotUpdateModel, db: Session):
-        if request.message.text == 'зареєструватись як admin':
-            return await bot_contents.send_message(request, 'введіть пароль')
-        elif hasattr(self, "_next_handler"):
-            await self._next_handler.handle_request(request, db)
-
-
-class AdminRegistrationHandler(AbstractHandler):
-    async def handle_request(self, request: BotUpdateModel, db: Session):
-        if request.message.text == admin_secret:
-            return await bot_contents.admin_registration(request, db)
+        if request.message.reply_to_message:
+            return await bot_contents.verify_user(request, db)
         elif hasattr(self, "_next_handler"):
             await self._next_handler.handle_request(request, db)
 
@@ -106,9 +90,8 @@ class DishesHandler(AbstractHandler):
         dish = await bot_contents.get_dish(request, db)
         if dish:
             user = await bot_contents.get_current_user(request, db)
-            bot_role = user.bot_role
             await bot_contents.send_dish_info(dish, request.message.from_tg.chat_id)
-            if bot_role == 'admin':
+            if user.role == Role.admin:
                 return await bot_contents.send_admin_functional(dish.dish_name, request)
             return {'message': 'ok'}
         elif dish == None or hasattr(self, "next_handler"):
@@ -117,37 +100,39 @@ class DishesHandler(AbstractHandler):
 
 class DelDishHandler(AbstractHandler):
     async def handle_request(self, request: BotUpdateModel, db: Session = Depends(get_db)):
-        if request.message.text.startswith('видалити позицію'):
+        if request.message.text and request.message.text.startswith('видалити позицію'):
             dish_name = request.message.text.removeprefix('видалити позицію').strip()
             return await bot_contents.del_dish(dish_name, request, db)
-        elif not request.message.text.startswith('видалити позицію') or hasattr(self, "next_handler"):
+        elif not request.message.text or not request.message.text.startswith('видалити позицію') or hasattr(self, "next_handler"):
             await self._next_handler.handle_request(request, db)
 
 
 class AddDishToStopListHandler(AbstractHandler):
     async def handle_request(self, request: BotUpdateModel, db: Session = Depends(get_db)):
-        if 'додати' in request.message.text:
+        if request.message.text and 'додати' in request.message.text:
             return await bot_contents.add_dish_to_stoplist(request, db)
-        elif not 'додати' in request.message.text or hasattr(self, "next_handler"):
+        elif not request.message.text or not 'додати' in request.message.text or hasattr(self, "next_handler"):
             await self._next_handler.handle_request(request, db)
 
 
 class DelDishFromStopListHandler(AbstractHandler):
     async def handle_request(self, request: BotUpdateModel, db: Session = Depends(get_db)):
-        if request.message.text.startswith('видалити зі стоп-листа'):
+        if request.message.text and request.message.text.startswith('видалити зі стоп-листа'):
             return await bot_contents.del_dish_from_stoplist(request, db)
-        elif not request.message.text.startswith('видалити зі стоп-листа') or hasattr(self, "next_handler"):
+        elif not request.message.text or not request.message.text.startswith('видалити зі стоп-листа') or hasattr(self, "next_handler"):
             await self._next_handler.handle_request(request, db)
 
 
 class UnknownCommand(AbstractHandler):
     async def handle_request(self, request: BotUpdateModel, db: Session = Depends(get_db)):
-        if request.message.text:
-            content = request.message.text
-            # gpt = Gpt(content)
-            # message = gpt.get_answer()
-            await bot_contents.send_message(request=request, message=content)
-            return await bot_contents.send_home(request)
+        if request:
+            await bot_contents.send_home(request)
+        # if request.message.text:
+        #     content = request.message.text
+        #     # gpt = Gpt(content)
+        #     # message = gpt.get_answer()
+        #     # await bot_contents.send_message(request=request, message=content)
+        #     return await bot_contents.send_home(request)
         elif hasattr(self, "next_handler"):
             await self._next_handler.handle_request(request, db)
 
@@ -191,8 +176,6 @@ async def bot_request_handler_chain():
 
     start_handler = StartHandler()
     user_registration_handler = UserRegistrationHandler()
-    secret_check_handler = SecretCheckHandler()
-    admin_registration_handler = AdminRegistrationHandler()
     stop_list_handler = StopListHandler()
     categorias_handler = CategoriesHandler()
     dishes_handler = DishesHandler()
@@ -202,9 +185,7 @@ async def bot_request_handler_chain():
     unknown_command = UnknownCommand()
 
     start_handler.set_next(user_registration_handler)
-    user_registration_handler.set_next(secret_check_handler)
-    secret_check_handler.set_next(admin_registration_handler)
-    admin_registration_handler.set_next(stop_list_handler)
+    user_registration_handler.set_next(stop_list_handler)
     stop_list_handler.set_next(categorias_handler)
     categorias_handler.set_next(dishes_handler)
     dishes_handler.set_next(del_dish_handler)

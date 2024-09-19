@@ -8,12 +8,15 @@ from src.database.db_connection import get_db
 from src.database.models import Dish, Category
 from src.repository import providers as prov
 from src.services.images import image_cloudinary, resize_image
+from src.services.roles import access_ABCU, access_A, access_ABC
 
 router = APIRouter(prefix="/providers", tags=["providers"])
 
 
 
-@router.get("/", response_model=list[ProviderResponse])
+@router.get("/", 
+            dependencies=[Depends(access_ABC)],
+            response_model=list[ProviderResponse])
 async def get_providers(db: Session = Depends(get_db)):
     providers = await prov.get_providers(db)
     if not providers:
@@ -23,7 +26,8 @@ async def get_providers(db: Session = Depends(get_db)):
 
 
 
-@router.delete("/delete/{id}")
+@router.delete("/delete/{id}",
+               dependencies=[Depends(access_ABCU)],)
 async def delete_provider(id: int, db: Session=Depends(get_db)):
     return await prov.delete_provider(id, db)
 

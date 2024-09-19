@@ -7,7 +7,7 @@ from fastapi import FastAPI, Request, APIRouter
 from sqlalchemy.orm import Session
 
 
-from src.schemas import BotUpdateModel, FromTG, BotMessage
+from src.schemas import BotUpdateModel, DishResponseModel, DishM2MIngredients, DishM2MPremixes
 from src.database.models import Dish, User
 
 
@@ -24,6 +24,7 @@ class TelegramBot:
         self.TG_API = API_key
         self.SEND_MESSAGE_URL = f"https://api.telegram.org/bot{API_key}/sendMessage"
         self.SEND_PHOTO_URL = f"https://api.telegram.org/bot{API_key}/sendPhoto"
+        self.DELETE_MESSAGE_URL = f"https://api.telegram.org/bot{API_key}/deleteMessage"
 
 
     async def send_start_message(self, request):
@@ -33,6 +34,7 @@ class TelegramBot:
 
 
     async def send_bot_message(self, data: dict):
+        print(f"data = {data}")
         print("bot/send_bot_message")
         async with ClientSession() as session:
             async with session.post(self.SEND_MESSAGE_URL, data=data) as response:
@@ -52,14 +54,15 @@ class TelegramBot:
 
     async def send_home(self, request: BotUpdateModel)-> None:
         chat_id = request.message.from_tg.chat_id
-        text = 'home'
-        buttons = [['home']]
-        reply_keyboard_marckup = {'keyboard': buttons}
-        reply_keyboard_marckup_json = json.dumps(reply_keyboard_marckup)
-        data = {
-            'chat_id': chat_id,
-            'text': '',
-            "reply_markup": reply_keyboard_marckup_json}
+        data = await self.make_bot_buttons([], request, home=True)
+        # text = 'home'
+        # buttons = [['home']]
+        # reply_keyboard_marckup = {'keyboard': buttons}
+        # reply_keyboard_marckup_json = json.dumps(reply_keyboard_marckup)
+        # data = {
+        #     'chat_id': chat_id,
+        #     'text': '',
+        #     "reply_markup": reply_keyboard_marckup_json}
         return await self.send_bot_message(data)
     
 
@@ -68,15 +71,15 @@ class TelegramBot:
                                home=True):
         print("bot/make_bot_buttons")
         chat_id = request.message.from_tg.chat_id
-        text = request.message.text
+        text = "🇺🇦"
         buttons = []
         for name in name_of_buttons:
             n = []
             n.append(name)
             buttons.append(n)
-        print(f"Buttons = {buttons}")
         if home:
             buttons.append(['home'])
+        print(f"Buttons = {buttons}")
         reply_keyboard_marckup = {'keyboard': buttons}
         reply_keyboard_marckup_json = json.dumps(reply_keyboard_marckup)
         data = {
@@ -120,15 +123,21 @@ class TelegramBot:
 
 
     async def send_dish_info(self, dish: Dish, chat_id: int) -> dict:
+        # dish_data = DishResponseModel(**dish.__dict__) 
         description = dish.description
         if not description:
             description = ''
         price = dish.price
         if not price:
             price = ''
-        ing = ''
-        for i in dish.ingredients.split(', '):
-            ing += i + '\n'
+        ing = '' 
+        for i in dish.dish_ingredients:
+            i: DishM2MIngredients
+            ing += f"{i.ingredient.name} - {i.quantity}\n"
+        if dish.dish_premixes:
+            for prem in dish.dish_premixes:
+                prem: DishM2MPremixes
+                ing += f"{prem.premix.name} - {prem.quantity}\n"
         text = f'id:\n{dish.id}\n\nназва:\n{dish.dish_name}\n\nопис:\n{description}\n\nкалькуляція:\n{ing}\n\nціна:\n{price}\n'
         data = {
             'chat_id': chat_id,
@@ -140,7 +149,7 @@ class TelegramBot:
 
 
     async def send_message(self, chat_id: int, message: str):
-        print("send message")
+        print(f"send message: {message}")
         data = {
             'chat_id': chat_id,
             'text': message
@@ -158,4 +167,14 @@ class TelegramBot:
             "reply_markup": force_reply_json,
         }       
         return await self.send_bot_message(data)
-        
+    
+
+    async def delete_message(self, chat_id: int, message_id: int):
+        data = {}
+        data['chat_id'] = chat_id
+        data['message_id'] = message_id
+
+        async with ClientSession() as session:
+            async with session.post(self.DELETE_MESSAGE_URL, data=data) as response:
+                result = {'message': 'deleted'}
+        return result

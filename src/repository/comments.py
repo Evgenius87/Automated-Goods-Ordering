@@ -1,5 +1,6 @@
 from fastapi import status, HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy import and_
 
 
 from src.schemas import CommentModel, CommentResponseModel
@@ -8,39 +9,32 @@ from src.services.images import image_cloudinary
 from src.repository.tags import find_tags
 
 
-async def get_comments(db: Session):
-    return db.query(Comment).all()
+async def get_comments(dish_id: int, db: Session, user: User):
+    return db.query(Comment).filter(and_(Comment.user_id == user.id, Comment.dish_id == dish_id)). all()
 
 
-async def get_comments_for_photo(image_id, db: Session):
-    return db.query(Comment).filter_by(image_id=image_id).all()
 
-
-async def get_comment_by_id(comment_id: int, db: Session):
-    return db.query(Comment).filter_by(id=comment_id).first()
-
-
-async def create_comment(some_comment: str, db: Session):#, current_user: User, db: Session):
-    new_comment = Comment(comment = some_comment)#, user_id=current_user.id)
-    db.add(new_comment)
+async def create_comment(body: CommentModel, user: User, db: Session):
+    comment = Comment(
+        comment = body.comment,
+        user_id = user.id,
+        dish_id = body.dish_id
+    )
+    db.add(comment)
     db.commit()
-    return new_comment
+    return comment
 
 
 async def update_comment(body: CommentResponseModel, db: Session, current_user: User):
-    comment = await get_comment_by_id(body.id, db)
-    if not comment:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,  detail="No such comment")
-    if comment.user_id == current_user.id or current_user.role in ['moderator', 'admin']:
-        comment.comment = body.comment
-        db.commit()
-        return comment
-    else:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You can't change not your comment")
+    comment = db.query(Comment).filter(Comment.id == body.id).first()
+    comment.comment = body.comment
+    db.commit()
+    db.refresh()
+    return comment
 
 
-async def remove_comment(comment_id, db: Session):
-    comment = await get_comment_by_id(comment_id, db)
+async def remove_comment(comment_id: int, db: Session, user: User):
+    comment = db.query(Comment).filter(and_(Comment.id == comment_id, Comment.user_id == user.id)).first()
     if comment:
         db.delete(comment)
         db.commit()

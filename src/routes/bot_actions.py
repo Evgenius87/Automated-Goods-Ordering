@@ -1,21 +1,15 @@
-
-import os
-import json
 from pprint import pprint
 
 from dotenv import load_dotenv
 
-from aiohttp import ClientSession
 from sqlalchemy.orm import Session
-from fastapi import FastAPI, Request, APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends
 
 from src.database.db_connection import get_db
 from src.schemas import BotUpdateModel, OkResponseModel
-from src.repository import bot_contents
 from src.bot_request_handler.bot_request_handler import bot_request_handler_chain
 from src.bot_request_handler.bot_request_handler import providers_bot_request_handler_chain
-from src.services.bot_exceptions import bot_exceptions
-
+from src.repository.bot_contents import delete_message
 
 
 router = APIRouter(prefix='/bot_actions', tags=["Bot"])
@@ -26,6 +20,7 @@ router = APIRouter(prefix='/bot_actions', tags=["Bot"])
 
 @router.post('/webhook/to_users', response_model=OkResponseModel)
 async def root(obj: BotUpdateModel, db: Session = Depends(get_db)):
+    await delete_message(obj)
     bot_handler_chain = await bot_request_handler_chain()
     response = await bot_handler_chain.handle_request(obj, db)
     return {'message': 'ok'}
@@ -33,10 +28,6 @@ async def root(obj: BotUpdateModel, db: Session = Depends(get_db)):
 
 @router.post('/webhook/to_providers', response_model=OkResponseModel)
 async def root(obj: BotUpdateModel, db: Session = Depends(get_db)):
-    # response = json.dumps(obj)
-    # pprint(obj)
-    # print("##############################")
-    # pprint(response)
     bot_handler_chain = await providers_bot_request_handler_chain()
     response = await bot_handler_chain.handle_request(obj, db)
     return {'message': 'ok'}

@@ -6,6 +6,7 @@ from src.schemas import CategoryModel, GetChildRequest, DishResponseModel, Categ
 from src.database.db_connection import get_db
 from src.repository import categories
 from src.database.models import Category
+from src.services.roles import access_ABCU, access_A
 
 
 router = APIRouter(prefix='/categories', tags=["Categories"])
@@ -25,7 +26,8 @@ async def get_children_by_name(name: str, db: Session = Depends(get_db)):
     return result
 
 
-@router.get("/", response_model=list[CategoryResponseModel], 
+@router.get("/", response_model=list[CategoryResponseModel],
+            dependencies=[Depends(access_ABCU)], 
             status_code=status.HTTP_200_OK)
 async def get_categories(db: Session = Depends(get_db)):
     categories_list = await categories.get_categories(db)
@@ -36,6 +38,7 @@ async def get_categories(db: Session = Depends(get_db)):
 
 
 @router.get("/get_category/{id}", response_model=CategoryResponseModel,
+            dependencies=[Depends(access_ABCU)],
             status_code=status.HTTP_200_OK)
 async def get_category(id: int, db: Session = Depends(get_db)):
     category = await categories.get_category(id, db)
@@ -46,6 +49,7 @@ async def get_category(id: int, db: Session = Depends(get_db)):
 
 
 @router.get("/get_dishes/{id}",response_model=list[DishResponseModel],
+            dependencies=[Depends(access_ABCU)],
             status_code=status.HTTP_200_OK)
 async def get_category_dishes(id: int, db: Session = Depends(get_db)):
     dishes = await categories.get_category_dishes(id, db)
@@ -56,17 +60,21 @@ async def get_category_dishes(id: int, db: Session = Depends(get_db)):
 
 
 
-@router.post('/add_category',response_model=CategoryResponseModel , status_code = status.HTTP_201_CREATED)
+@router.post('/add_category',response_model=CategoryResponseModel ,
+             dependencies=[Depends(access_A)],
+             status_code = status.HTTP_201_CREATED)
 async def add_new_category(body: CategoryModel, db: Session = Depends(get_db)):
     return await categories.add_new_category(body, db)
 
 
-@router.delete("/delete/{id}",status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/delete/{id}",
+               dependencies=[Depends(access_A)],
+               status_code=status.HTTP_204_NO_CONTENT)
 async def delete_category(id: int, db: Session = Depends(get_db)):
     return await categories.delete_category(id, db)
 
 
-@router.post("/create_home", response_model=CategoryHomeModel)
-async def create_home_category(db: Session = Depends(get_db)):
-    return await categories.create_home_category(db)
+# @router.post("/create_home", response_model=CategoryHomeModel)
+# async def create_home_category(db: Session = Depends(get_db)):
+#     return await categories.create_home_category(db)
 

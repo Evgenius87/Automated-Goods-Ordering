@@ -10,12 +10,14 @@ from src.database.db_connection import get_db
 from src.database.models import Dish, Category
 from src.repository import dishes, bot_contents
 from src.services.images import image_cloudinary, resize_image
+from src.services.roles import access_A, access_ABC, access_ABCU
 
 
 router = APIRouter(prefix='/dishes', tags=["Dishes"])
 
 
-@router.get('/{dish_id}', response_model=DishResponseModel)
+@router.get('/{dish_id}', response_model=DishResponseModel,
+            dependencies=[Depends(access_ABCU)])
 async def get_dish(dish_id:int, db: Session = Depends(get_db)):
      dish =  await dishes.get_dish(dish_id, db)
      if dish is None:
@@ -25,7 +27,10 @@ async def get_dish(dish_id:int, db: Session = Depends(get_db)):
      return dish
 
 
-@router.get('/', response_model=list[DishResponseModel], status_code=status.HTTP_200_OK)
+@router.get('/', 
+            dependencies=[Depends(access_ABCU)],
+            response_model=list[DishResponseModel], 
+            status_code=status.HTTP_200_OK)
 async def get_all_dishes(db: Session = Depends(get_db)):
      dishes_list = await dishes.get_all_dishes(db)
      if dishes_list is None:
@@ -36,7 +41,11 @@ async def get_all_dishes(db: Session = Depends(get_db)):
 
 
      
-@router.post('/create_new_dish', response_model=DishResponseModel, status_code=status.HTTP_201_CREATED)
+@router.post('/create_new_dish',
+             dependencies=[Depends(access_ABC)],
+             response_model=DishResponseModel, 
+             status_code=status.HTTP_201_CREATED,
+             )
 async def create_new_dish(body: DishModel,
                           db: Session = Depends(get_db)):
     dish = await dishes.add_new_dish(body, db)
@@ -48,6 +57,7 @@ async def create_new_dish(body: DishModel,
 
 
 @router.patch('/update_photo',
+              dependencies=[Depends(access_ABC)],
               response_model=DishResponseModel, 
               status_code=status.HTTP_202_ACCEPTED)
 async def update_photo(id: int = Form(), 
@@ -66,6 +76,7 @@ async def update_photo(id: int = Form(),
 
 
 @router.patch("/patch", 
+              dependencies=[Depends(access_ABC)],
               response_model=DishResponseModel,
               status_code=status.HTTP_202_ACCEPTED)
 async def patch_dish(body: UpdateDishModel, db: Session = Depends(get_db)):
@@ -77,6 +88,8 @@ async def patch_dish(body: UpdateDishModel, db: Session = Depends(get_db)):
     return dish
 
 
-@router.delete("/delete/{id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/delete/{id}", 
+               dependencies=[Depends(access_A)],
+               status_code=status.HTTP_204_NO_CONTENT)
 async def delete_dish(id: int, db: Session = Depends(get_db)):
     return await dishes.delete_dish(id, db)
