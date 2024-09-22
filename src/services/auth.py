@@ -99,7 +99,6 @@ class Auth:
             expire = datetime.utcnow() + timedelta(days=30)
         to_encode.update({"iat": datetime.utcnow(), "exp": expire, "scope": "refresh_token"})
         encoded_refresh_token = jwt.encode(to_encode, self.SECRET_KEY, algorithm=self.ALGORITHM)
-        print(f"refresh_token = {encoded_refresh_token}")
         return encoded_refresh_token
     
 

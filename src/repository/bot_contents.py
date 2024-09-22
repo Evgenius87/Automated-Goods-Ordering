@@ -49,6 +49,7 @@ async def verify_user(request: BotUpdateModel, db: Session):
             try:
                 if request.message.from_tg.username:
                     user.username = request.message.from_tg.username
+                user.chat_id = request_chat_id
                 db.commit()
                 db.refresh(user)
                 positive_message = f'Вітаю, {user.first_name}.\nВи успішно зарегістровані'
