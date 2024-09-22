@@ -1,22 +1,15 @@
 import json
-import os
 
 from dotenv import load_dotenv
 from aiohttp import ClientSession
-from fastapi import FastAPI, Request, APIRouter
 from sqlalchemy.orm import Session
 
-
-from src.schemas import BotUpdateModel, DishResponseModel, DishM2MIngredients, DishM2MPremixes
+from src.schemas import BotUpdateModel, DishM2MIngredients, DishM2MPremixes
 from src.database.models import Dish, User
 
 
+
 load_dotenv()
-
-# TG_API = os.getenv("BOT_TOKEN")
-# SEND_MESSAGE_URL = os.getenv("SEND_MESSAGE_URL")
-# SEND_PHOTO_URL = os.getenv("SEND_PHOTO_URL")
-
 
 class TelegramBot:
 

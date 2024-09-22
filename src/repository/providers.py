@@ -1,14 +1,9 @@
-import os
-
 from dotenv import load_dotenv
-from fastapi import status, HTTPException
 from sqlalchemy.orm import Session
 
 from src.schemas import BotUpdateModel
 from src.database.models import  Provider, User
-from src.services.resto_stock_balanse import  IikoAPIHandler
 from src.services.telegram_bot import TelegramBot
-from src.repository.tags import find_tags
 from src.conf.config import settings
 from src.services.handler_errors import handle_errors
 
@@ -38,6 +33,7 @@ async def get_providers(db: Session):
     providers = db.query(Provider).all()
     return providers
 
+
 @handle_errors
 async def delete_provider(id: int, db: Session):
     provider = db.query(Provider).filter(Provider.id == id).first()
@@ -45,6 +41,7 @@ async def delete_provider(id: int, db: Session):
         db.delete(provider)
         db.commit()
     return {"message": "provider successfully deleted"}
+
 
 @handle_errors
 async def start_message(request: BotUpdateModel, db: Session):
@@ -59,6 +56,7 @@ async def start_message(request: BotUpdateModel, db: Session):
     return await telegram_bot.send_message_to_reply(chat_id=request.message.from_tg.chat_id,
                                                     message=INPUT_NAME,
                                                     placeholder=PLACEHOLDER_NAME)
+
 
 @handle_errors
 async def save_provider_name(request: BotUpdateModel, db: Session):
@@ -88,6 +86,7 @@ async def save_provider_phone(request: BotUpdateModel, db: Session):
     return await telegram_bot.send_message_to_reply(chat_id=request.message.from_tg.chat_id,
                                            message=INPUT_EMAIL, placeholder=PLACEHOLDER_EMAIL)
 
+
 @handle_errors
 async def save_provider_email(request: BotUpdateModel, db: Session):
     provider = db.query(Provider).filter(Provider.chat_id == request.message.from_tg.chat_id).first()
@@ -100,6 +99,7 @@ async def save_provider_email(request: BotUpdateModel, db: Session):
     db.commit()
     return await telegram_bot.send_message(chat_id=request.message.from_tg.chat_id,
                                            message=NICE_TO_MEET_YOU)
+
 
 @handle_errors
 async def forward_message_to_admin(request: BotUpdateModel, db: Session):

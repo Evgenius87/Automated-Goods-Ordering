@@ -1,14 +1,11 @@
-import os
 from random import randint
 
 from dotenv import load_dotenv
-from fastapi import status, HTTPException
 from sqlalchemy.orm import Session
 
-from src.schemas import UserResponseModel, UserModel, UserRegistrationBase, GoogleAuthResp
+from src.schemas import UserResponseModel, UserRegistrationBase, GoogleAuthResp
 from src.database.models import  User, Token
 
-from src.repository.tags import find_tags
 
 
 
@@ -86,7 +83,6 @@ async def create_user_by_google_cred(data: GoogleAuthResp, db: Session, bot_auth
         email = data.email,
         secret_code = hash_code
     )
-
     if not users:
         user.role = 'admin'
 

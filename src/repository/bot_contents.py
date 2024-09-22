@@ -1,17 +1,11 @@
-import os
-
 from dotenv import load_dotenv
-from aiohttp import ClientSession
-from aiohttp import ClientSession
-from fastapi import FastAPI, Request, APIRouter
 from sqlalchemy.orm import Session
 
-from src.schemas import BotUpdateModel, FromTG, BotMessage, StopListModel
+from src.schemas import BotUpdateModel, BotMessage, StopListModel
 from src.database.models import Dish, User, Category
 from src.services.telegram_bot import TelegramBot
 from src.services.bot_exceptions import bot_exceptions
 from src.conf.config import settings
-from src.services.handler_errors import handle_errors
 from src.services.auth import auth_service
 from src.repository.stop_list import get_stop_list
 
@@ -49,21 +43,18 @@ async def verify_user(request: BotUpdateModel, db: Session):
     users = db.query(User).all()
     request_message = request.message.text
     request_chat_id = request.message.from_tg.chat_id
+    
     for user in users:
-
         if auth_service.verify_password(request_message, user.secret_code):
             try:
-                # user.chat_id = request_chat_id
                 if request.message.from_tg.username:
                     user.username = request.message.from_tg.username
-            
                 db.commit()
                 db.refresh(user)
                 positive_message = f'Вітаю, {user.first_name}.\nВи успішно зарегістровані'
                 await bot.delete_message(request.message.from_tg.chat_id, request.message.message_id)
                 await bot.send_message(request_chat_id, positive_message)
                 return await bot.send_home(request)
-                print("hi")
             except BaseException as e:
                 await bot.send_message(request_chat_id, 
                                        "Нажаль не вдалось Вас зареєструвати. \nМожливо Ваш телеграм аккаунт вже зареєстрований в нашому застосунку ")
@@ -78,7 +69,6 @@ async def verify_user(request: BotUpdateModel, db: Session):
 @bot_exceptions
 async def bot_start(request: BotUpdateModel, db: Session) -> dict:
     chat_id = request.message.from_tg.chat_id
-    # user = await get_current_user(request, db)
     user = None
     if not user:
         await bot.send_message(chat_id, HELLO_MESSAGE)

@@ -2,8 +2,7 @@ import logging
 
 from random import randint
 
-from dotenv import load_dotenv
-from fastapi import APIRouter, Depends, status, HTTPException, Security, BackgroundTasks, Request, Response
+from fastapi import APIRouter, Depends, status, HTTPException, Security, BackgroundTasks, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials, OAuth2PasswordRequestForm
 from fastapi.responses import JSONResponse
 from starlette.responses import RedirectResponse
@@ -11,7 +10,7 @@ from sqlalchemy.orm import Session
 from google.oauth2 import id_token
 from google.auth.transport import requests
 
-from src.schemas import UserRegistrationBase, TokenModel, AuthCodeModel, OkResponseModel, GoogleAuthResp
+from src.schemas import UserRegistrationBase, TokenModel, OkResponseModel, GoogleAuthResp
 from src.database.db_connection import get_db
 from src.repository import users as repository_users
 from src.database.models import User, Token
@@ -73,8 +72,6 @@ async def google_auth(request: Request,
     await repository_users.update_token(user, refresh_token, db)
     # print({"access_token": access_token, "refresh_token": refresh_token, "token_type": "bearer"})
     return {"access_token": access_token, "refresh_token": refresh_token, "token_type": "bearer"}
-
-
 
 
 @router.post("/signup", response_model=OkResponseModel, status_code=status.HTTP_201_CREATED)

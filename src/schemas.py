@@ -1,8 +1,8 @@
 from datetime import datetime
 from pydantic import BaseModel, Field, EmailStr
-from typing import ClassVar, Annotated
-from fastapi import UploadFile, File
-from src.database.models import Tag, Role
+from typing import Annotated
+from fastapi import File
+from src.database.models import Role
 from typing import Optional, Any, Union
 
 
@@ -304,18 +304,6 @@ class CategoryResponseModel(BaseModel):
 
 #########################################
     
-
-
-########################################3
-
-class AddPhotoModel(BaseModel):
-    photo: Annotated[bytes, File()]
-
-class HelloResponsemodel(BaseModel):
-    BotMessage: str
-
-
-#########################################
 
 class CommentModel(BaseModel):
     comment: str

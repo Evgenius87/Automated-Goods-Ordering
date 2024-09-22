@@ -1,7 +1,6 @@
-from typing import List
+import enum
 
 from enum import Enum
-import enum
 
 from sqlalchemy import Column, Integer,Float, String, Boolean, DateTime, func, Table, Enum, BIGINT
 from sqlalchemy.orm import relationship
@@ -9,8 +8,9 @@ from sqlalchemy.sql.schema import ForeignKey
 from sqlalchemy.sql.sqltypes import DateTime
 from sqlalchemy.ext.declarative import declarative_base
 
-Base = declarative_base()
 
+
+Base = declarative_base()
 
 
 dish_m2m_tag = Table(
@@ -133,7 +133,6 @@ class Comment(Base):
     dish = relationship("Dish", back_populates="comments")
     created_at = Column("created_at", DateTime, default=func.now())
     updated_at = Column("updated_at", DateTime, default=func.now(), onupdate=func.now())
-
 
 
 

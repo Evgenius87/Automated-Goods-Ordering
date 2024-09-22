@@ -1,10 +1,7 @@
-from fastapi import status, HTTPException
 from sqlalchemy.orm import Session
 
-from src.schemas import StopListModel, DishResponseModel
+from src.schemas import StopListModel
 from src.database.models import Dish
-from src.services.images import image_cloudinary
-from src.repository.tags import find_tags
 from src.repository import dishes as reepository_dishes
 from src.repository import ingredients as repository_ingredients
 from src.services.handler_errors import handle_errors
@@ -24,8 +21,11 @@ async def get_stop_list(db: Session) -> StopListModel:
     )
     return check_list
 
+
 @handle_errors
 async def update_stop_list(db: Session):
-    await reepository_dishes.update_stop_list(db)
-    # await repository_ingredients.update_ingerdients(db)
-    return await get_stop_list(db)
+    stop_list_data = await repository_ingredients.update_ingerdients(db)
+    return await reepository_dishes.get_check_list(stop_list_data, db)
+    # return await reepository_dishes.update_stop_list(db)
+    # # await repository_ingredients.update_ingerdients(db)
+    # # return await get_stop_list(db)

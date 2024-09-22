@@ -1,12 +1,13 @@
-from dotenv import load_dotenv
-from fastapi import FastAPI, Request, APIRouter, Depends, status, HTTPException
+
+from fastapi import  APIRouter, Depends, status, HTTPException
 from sqlalchemy.orm import Session
 
-from src.schemas import CategoryModel, GetChildRequest, DishResponseModel, CategoryResponseModel, CategoryHomeModel
+from src.schemas import CategoryModel, GetChildRequest, DishResponseModel, CategoryResponseModel
 from src.database.db_connection import get_db
 from src.repository import categories
 from src.database.models import Category
 from src.services.roles import access_ABCU, access_A
+
 
 
 router = APIRouter(prefix='/categories', tags=["Categories"])

@@ -1,12 +1,9 @@
-from fastapi import status, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
 
-
 from src.schemas import CommentModel, CommentResponseModel
-from src.database.models import Dish, Tag, Category, User, Comment
-from src.services.images import image_cloudinary
-from src.repository.tags import find_tags
+from src.database.models import User, Comment
+
 
 
 async def get_comments(dish_id: int, db: Session, user: User):

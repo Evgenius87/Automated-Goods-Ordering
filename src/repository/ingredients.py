@@ -1,17 +1,16 @@
 import os
+import logging
+import time
 
 from dotenv import load_dotenv
-from fastapi import status, HTTPException
 from sqlalchemy.orm import Session
 
-from src.schemas import OrederIngByProvider, IngredientUpdateModel, BotUpdateModel, BotMessage, FromTG, FakeBotUpdateModel, FakeBotRequest
-from src.database.models import Dish, Tag, Category, User, Ingredient, Provider
+from src.schemas import OrederIngByProvider, IngredientUpdateModel, FromTG, FakeBotUpdateModel, FakeBotRequest
+from src.database.models import Ingredient, Provider
 from src.services.resto_stock_balanse import  IikoAPIHandler
 from src.services.telegram_bot import TelegramBot
-from src.repository.tags import find_tags
 from src.services.handler_errors import handle_errors
 
-from src.repository import dishes as repository_dishes
 
 
 
@@ -23,6 +22,7 @@ TG_API = os.getenv("BOT_TOKEN_PRO")
 
 telegram_bot = TelegramBot(TG_API)
 
+logger = logging.getLogger(__name__)
 
 async def get_all_ingredients(db: Session) -> list[Ingredient]:
     ingredients = db.query(Ingredient).all()
@@ -57,29 +57,68 @@ async def patch_ingredient(body: IngredientUpdateModel, db: Session):
     return ingredient
 
 
+async def check_stock_balance(ingredient: Ingredient):
+    keys = ("stop_list", "runing_out", "need_to_sold")
+    if ingredient.amount <= ingredient.min_acceptable:
+        return keys[0], ingredient.id
+    elif ingredient.amount > ingredient.min_acceptable and ingredient.amount <= ingredient.stock_minimum:
+        return keys[1], ingredient.id
+    elif ingredient.amount > ingredient.stock_maximum:
+        return keys[2], ingredient.id
+    else: 
+        return None
+
+
 @handle_errors
 async def update_ingerdients(db: Session):
+    all_time_start = time.time()
+    logging.basicConfig(level=logging.INFO)
+
     iiko_server = IikoAPIHandler()
-    data = iiko_server.get_storage_balance()
+
+    storage_data_time_start = time.time()
+
+    data = await iiko_server.get_storage_balance()
+
+    storage_data_time_end = time.time()
+    logger.info(f'storage_data_time - {storage_data_time_end - storage_data_time_start}')
+
+    stop_list_data = {
+        "stop_list": [],
+        "runing_out": [],
+        "need_to_sold": []
+    }
+    cycle_time_start = time.time()
+    ingredients_in_db = db.query(Ingredient).all()
+    ingredients_map = {ingredient.product_id: ingredient for ingredient in ingredients_in_db}
+
     for obj in data:
-        ingredient = db.query(Ingredient).filter(Ingredient.product_id == obj.get("product")).first()
+        product_id = obj.get("product")
+        ingredient = ingredients_map.get(product_id)
         if ingredient:
+            # Оновлюємо дані для існуючих інгредієнтів
             ingredient.amount = obj.get("amount")
             ingredient.suma = obj.get("sum")
-            # await repository_dishes.check_dishes_for_stop_list(ingredient, db)
-            db.commit()
-            continue
+            stock_balance = await check_stock_balance(ingredient)
+            if stock_balance:
+                stop_list_data.get(stock_balance[0]).append(stock_balance[1])
         else:
+            # Додаємо новий інгредієнт до списку для додавання в базу
             new_ingredient = Ingredient(
                 name = obj.get("name"),
-                product_id = obj.get("product"),
+                product_id = product_id,
                 amount = obj.get("amount"),
                 suma = obj.get("sum"),
                 using = True
-                    )
+            )
             db.add(new_ingredient)
-            db.commit()
-    return {'message': 'Done'}
+
+    db.commit()
+    cycle_time_end = time.time()
+    logger.info(f'cycle_time - {cycle_time_start - cycle_time_end}')
+    all_time_end = time.time()
+    logger.info(f'update_ingerdients - {all_time_end - all_time_start}')
+    return stop_list_data
 
 
 async def calculate_order(standart_container: float, stock_maximum: float, amount: float) -> int:
@@ -111,6 +150,7 @@ async def get_order(db: Session):
             provider_with_ingredients['order'] = value
         prov_with_ing_list.append(provider_with_ingredients)
     return prov_with_ing_list
+
 
 @handle_errors
 async def create_fake_request(chat_id: int)-> FakeBotUpdateModel:
