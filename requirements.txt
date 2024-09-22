@@ -18,3 +18,4 @@ authlib
 google-api-python-client
 itsdangerous
 httpx
+python-multipart
