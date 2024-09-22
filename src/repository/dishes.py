@@ -211,11 +211,17 @@ async def get_updated_stop_list(data: dict, db: Session):
 
     for dish in ended:
         dish.ended = True
+        dish.runing_out = False
+        dish.need_to_sold = False
 
     for dish in running_out:
+        dish.ended = False
         dish.runing_out = True
+        dish.need_to_sold = False
 
     for dish in need_to_sold:
+        dish.ended = False
+        dish.runing_out = False
         dish.need_to_sold = True
     
     db.commit()

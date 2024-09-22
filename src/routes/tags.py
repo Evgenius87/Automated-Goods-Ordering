@@ -27,7 +27,7 @@ async def get_tags(db: Session = Depends(get_db)):
                dependencies=[Depends(access_A)],
                status_code=status.HTTP_204_NO_CONTENT)
 async def delete_tag(id: int, db: Session = Depends(get_db)):
-    return tags.delete_tag(id, db)
+    return await tags.delete_tag(id, db)
 
 
 # @router.delete("/delete_all", status_code=status.HTTP_204_NO_CONTENT)
