@@ -58,10 +58,10 @@ async def patch_ingredient(body: IngredientUpdateModel, db: Session):
 
 
 async def check_stock_balance(ingredient: Ingredient):
-    keys = ("stop_list", "runing_out", "need_to_sold")
-    if ingredient.amount <= ingredient.min_acceptable:
+    keys = ("ended", "runing_out", "need_to_sold")
+    if ingredient.amount <= ingredient.stock_minimum:
         return keys[0], ingredient.id
-    elif ingredient.amount > ingredient.min_acceptable and ingredient.amount <= ingredient.stock_minimum:
+    elif ingredient.amount > ingredient.stock_minimum and ingredient.amount <= ingredient.min_acceptable:
         return keys[1], ingredient.id
     elif ingredient.amount > ingredient.stock_maximum:
         return keys[2], ingredient.id
@@ -84,7 +84,7 @@ async def update_ingerdients(db: Session):
     logger.info(f'storage_data_time - {storage_data_time_end - storage_data_time_start}')
 
     stop_list_data = {
-        "stop_list": [],
+        "ended": [],
         "runing_out": [],
         "need_to_sold": []
     }
@@ -135,7 +135,7 @@ async def get_order(db: Session):
         ingredients = db.query(Ingredient).filter(
             Ingredient.provider_id == provider.id,
             Ingredient.using == True,
-            Ingredient.amount < Ingredient.min_acceptable
+            Ingredient.amount <= Ingredient.min_acceptable
         ).all()
         if ingredients:
             value = []

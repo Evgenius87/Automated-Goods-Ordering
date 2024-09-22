@@ -32,7 +32,7 @@ async def add_new_dish(body: DishModel, db: Session):
                          tags=tags, 
                          category_id=body.category_id,
                          price=body.price,
-                         stop_list = False,
+                         ended = False,
                          runing_out = False,
                          need_to_sold = False,
                          )
@@ -190,7 +190,7 @@ async def delete_dish(dish_id: int, db: Session):
     
 
 @handle_errors
-async def get_check_list(data: dict, db: Session):
+async def get_updated_stop_list(data: dict, db: Session):
 
     dishes_data = {}
     for key, value in data.items():
@@ -200,17 +200,17 @@ async def get_check_list(data: dict, db: Session):
 
     need_to_sold = set(dishes_data.get("need_to_sold"))
     running_out = set(dishes_data.get("runing_out"))
-    stop_list = set(dishes_data.get("stop_list"))
+    ended = set(dishes_data.get("ended"))
 
-    need_to_sold = need_to_sold - stop_list - running_out
-    running_out = running_out - stop_list
+    need_to_sold = need_to_sold - ended - running_out
+    running_out = running_out - ended
 
     need_to_sold = db.query(Dish).filter(Dish.id.in_(list(need_to_sold))).all()
     running_out = db.query(Dish).filter(Dish.id.in_(list(running_out))).all()
-    stop_list = db.query(Dish).filter(Dish.id.in_(list(stop_list))).all()
+    ended = db.query(Dish).filter(Dish.id.in_(list(ended))).all()
 
-    for dish in stop_list:
-        dish.stop_list = True
+    for dish in ended:
+        dish.ended = True
 
     for dish in running_out:
         dish.runing_out = True
@@ -220,13 +220,13 @@ async def get_check_list(data: dict, db: Session):
     
     db.commit()
 
-    check_list = StopListModel(
-        stop_list=stop_list,
+    stop_list = StopListModel(
+        ended=ended,
         runing_out=running_out,
         need_to_sold=need_to_sold
     )
 
-    return check_list
+    return stop_list
 
 
     

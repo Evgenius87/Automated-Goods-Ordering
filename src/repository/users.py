@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from sqlalchemy.orm import Session
 
 from src.schemas import UserResponseModel, UserRegistrationBase, GoogleAuthResp
-from src.database.models import  User, Token
+from src.database.models import  User, Token, RefreshToken
 
 
 
@@ -68,7 +68,7 @@ async def create_user(body: UserRegistrationBase, db: Session, bot_auth_code: st
 
     db.add(user)
     db.commit()
-    response_user = db.query(User).order_by(User.id.desc()).first()
+    # response_user = db.query(User).order_by(User.id.desc()).first()
 
     return user
 
@@ -101,11 +101,23 @@ async def get_user_by_email(email: str, db: Session):
 
 async def update_token(user: User, refresh_token: str, db: Session):
 
-    user.refresh_token = refresh_token
+    new_refresh_token = RefreshToken(
+        token=refresh_token,
+        user=user 
+    )
+    db.add(new_refresh_token)
     db.commit()
     db.refresh(user)
 
     return user
+
+
+async def delete_refresh_token(refresh_token: str, db: Session):
+    token = db.query(RefreshToken).filter(RefreshToken.token == refresh_token).first()
+    db.delete(token)
+    db.commit()
+    return {"message": "token has been deleted"}
+
 
 
 async def add_token_to_blacklist(token: str, db: Session):

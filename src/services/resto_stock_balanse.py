@@ -215,7 +215,7 @@ class IikoAPIHandler:
             
                 result = await response.text()
                 self.__token = result
-                print(f"iiko_token = {result}")
+                # print(f"iiko_token = {result}")
                 return self.__token
 
     async def get_nomenclature(self) -> list[dict]:

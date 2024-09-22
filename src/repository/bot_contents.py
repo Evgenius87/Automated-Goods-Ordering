@@ -7,7 +7,7 @@ from src.services.telegram_bot import TelegramBot
 from src.services.bot_exceptions import bot_exceptions
 from src.conf.config import settings
 from src.services.auth import auth_service
-from src.repository.stop_list import get_stop_list
+from src.repository import stop_list as repository_stop_list
 
 
 load_dotenv()
@@ -79,11 +79,11 @@ async def bot_start(request: BotUpdateModel, db: Session) -> dict:
 
 @bot_exceptions
 async def stop_list(request: BotUpdateModel, db: Session) -> dict:
-    stop_list = await get_stop_list(db)
+    stop_list = await repository_stop_list.get_stop_list(db)
     stop_list: StopListModel
-    stop_list_dishes = stop_list.stop_list
-    stop_list_dishes_name = [dish.dish_name for dish in stop_list_dishes]
-    buttons = await bot.make_bot_buttons(stop_list_dishes_name, request)
+    ended_dishes = stop_list.ended
+    ended_dishes_name = [dish.dish_name for dish in ended_dishes]
+    buttons = await bot.make_bot_buttons(ended_dishes_name, request)
     return await bot.send_bot_message(buttons)
 
 
@@ -139,7 +139,7 @@ async def del_dish(dish_name: str,request: BotUpdateModel, db: Session) -> dict:
 async def add_dish_to_stoplist(request: BotUpdateModel, db: Session) -> dict:
     dish_name = request.message.text.removeprefix('додати у стоп-лист').strip()
     dish = db.query(Dish).filter(Dish.dish_name == dish_name).first()
-    dish.stop_list = True
+    dish.ended = True
     db.commit()
     db.refresh(dish)
     return await bot.send_home(request)
@@ -149,7 +149,7 @@ async def add_dish_to_stoplist(request: BotUpdateModel, db: Session) -> dict:
 async def del_dish_from_stoplist(request: BotUpdateModel, db: Session) -> dict:
     dish_name = request.message.text.removeprefix('видалити зі стоп-листа').strip()
     dish = db.query(Dish).filter(Dish.dish_name == dish_name).first()
-    dish.stop_list = False
+    dish.ended = False
     db.commit()
     return await bot.send_home(request)
 

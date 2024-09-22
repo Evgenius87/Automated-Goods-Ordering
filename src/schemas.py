@@ -240,7 +240,7 @@ class DishResponseModel(BaseModel):
     dish_ingredients: Optional[list[DishM2MIngredients]]
     dish_premixes: Optional[list[DishM2MPremixes]] = Any
     tags: Optional[list[TagResponseModel]] = Any
-    stop_list: Any
+    ended: Any
     runing_out: Any
     need_to_sold: Any
     price: int
@@ -341,7 +341,7 @@ class AvailableDishesModel(BaseModel):
     dishes: Optional[list[DishResponseModel]]
 
 class StopListModel(BaseModel):
-    stop_list: Optional[list[DishResponseModel]]
+    ended: Optional[list[DishResponseModel]]
     runing_out: Optional[list[DishResponseModel]]
     need_to_sold: Optional[list[DishResponseModel]]
     
