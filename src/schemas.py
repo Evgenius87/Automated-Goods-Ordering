@@ -1,8 +1,8 @@
 from datetime import datetime
 from pydantic import BaseModel, Field, EmailStr
-from typing import ClassVar, Annotated
-from fastapi import UploadFile, File
-from src.database.models import Tag, Role
+from typing import Annotated
+from fastapi import File
+from src.database.models import Role
 from typing import Optional, Any, Union
 
 
@@ -240,7 +240,7 @@ class DishResponseModel(BaseModel):
     dish_ingredients: Optional[list[DishM2MIngredients]]
     dish_premixes: Optional[list[DishM2MPremixes]] = Any
     tags: Optional[list[TagResponseModel]] = Any
-    stop_list: Any
+    ended: Any
     runing_out: Any
     need_to_sold: Any
     price: int
@@ -305,18 +305,6 @@ class CategoryResponseModel(BaseModel):
 #########################################
     
 
-
-########################################3
-
-class AddPhotoModel(BaseModel):
-    photo: Annotated[bytes, File()]
-
-class HelloResponsemodel(BaseModel):
-    BotMessage: str
-
-
-#########################################
-
 class CommentModel(BaseModel):
     comment: str
     dish_id: int
@@ -353,7 +341,7 @@ class AvailableDishesModel(BaseModel):
     dishes: Optional[list[DishResponseModel]]
 
 class StopListModel(BaseModel):
-    stop_list: Optional[list[DishResponseModel]]
+    ended: Optional[list[DishResponseModel]]
     runing_out: Optional[list[DishResponseModel]]
     need_to_sold: Optional[list[DishResponseModel]]
     

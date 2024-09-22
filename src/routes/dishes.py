@@ -1,20 +1,17 @@
 import uuid
-import io
 
 from fastapi import HTTPException,APIRouter, Depends, status, UploadFile, File, Form
 from sqlalchemy.orm import Session
-from PIL import Image
 
-from src.schemas import DishResponseModel, UpdateDishModel, PremixToDishModel, IngredientModel, DishModel
+from src.schemas import DishResponseModel, UpdateDishModel, DishModel
 from src.database.db_connection import get_db
-from src.database.models import Dish, Category
-from src.repository import dishes, bot_contents
+from src.repository import dishes
 from src.services.images import image_cloudinary, resize_image
 from src.services.roles import access_A, access_ABC, access_ABCU
 
 
-router = APIRouter(prefix='/dishes', tags=["Dishes"])
 
+router = APIRouter(prefix='/dishes', tags=["Dishes"])
 
 @router.get('/{dish_id}', response_model=DishResponseModel,
             dependencies=[Depends(access_ABCU)])
@@ -38,7 +35,6 @@ async def get_all_dishes(db: Session = Depends(get_db)):
             status_code=status.HTTP_404_NOT_FOUND, detail="Dishes not found"
         )
      return dishes_list
-
 
      
 @router.post('/create_new_dish',

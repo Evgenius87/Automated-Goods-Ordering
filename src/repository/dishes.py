@@ -1,18 +1,18 @@
-import functools
+import time
 import logging
 
 from fastapi import status, HTTPException
 from sqlalchemy.orm import Session
 
-from src.schemas import DishModel, UpdateDishModel, DishResponseModel
-from src.database.models import Dish, Tag, Category, User, Ingredient, Premix, Dish_M2M_Ingredients, Dish_M2M_Premixes
+from src.schemas import DishModel, UpdateDishModel, StopListModel
+from src.database.models import Dish, Category, Ingredient, Premix, Dish_M2M_Ingredients, Dish_M2M_Premixes
 from src.services.images import image_cloudinary
 from src.repository.tags import find_tags
-from src.repository import comments
 from src.repository import ingredients as repository_ing
 from src.services.handler_errors import handle_errors
 
 
+logger = logging.getLogger(__name__)
 
 async def get_all_dishes(db: Session):
     return db.query(Dish).order_by(Dish.id).all()
@@ -27,13 +27,12 @@ async def get_dish(dish_id: int, db: Session):
 async def add_new_dish(body: DishModel, db: Session):
     if body.tags:
         tags = await find_tags(body.tags, db)
-    # category_db = db.query(Category).filter(Category.id == body.category_id).first()
     new_dish = Dish(dish_name=body.dish_name, 
                          description=body.description, 
                          tags=tags, 
                          category_id=body.category_id,
                          price=body.price,
-                         stop_list = False,
+                         ended = False,
                          runing_out = False,
                          need_to_sold = False,
                          )
@@ -150,50 +149,109 @@ async def delete_dish(dish_id: int, db: Session):
     return{"message": "The Dish is correctly deleted"}
 
 
-@handle_errors
-async def find_ingredients_id_of_dish(dish_id: int, db: Session):
-    d_m2m_i_list = db.query(Dish_M2M_Ingredients).filter(Dish_M2M_Ingredients.dish_id == dish_id).all()
-    ingredients_id = [d_m2m_i.ingredient_id for d_m2m_i in d_m2m_i_list]
-    ingredients_id = list(set(ingredients_id))
-    return ingredients_id
+# @handle_errors
+# async def find_ingredients_id_of_dish(dish_id: int, db: Session):
+#     time_start = time.time()
+#     logging.basicConfig(level=logging.INFO)
+#     d_m2m_i_list = db.query(Dish_M2M_Ingredients).filter(Dish_M2M_Ingredients.dish_id == dish_id).all()
+#     ingredients_id = [d_m2m_i.ingredient_id for d_m2m_i in d_m2m_i_list]
+#     ingredients_id = list(set(ingredients_id))
+#     time_end = time.time()
+#     logger.info(f"find_ingredients_id_of_dish - {time_end - time_start}")
+#     return ingredients_id
 
 
-@handle_errors
-async def check_available_ing(ingredients_id: list[int], db: Session):
-    need_to_sold = False
-    runing_out = False
-    stop_list = False
-    ingredient = db.query(Ingredient).filter(Ingredient.id.in_(ingredients_id),
-                                             Ingredient.amount < Ingredient.stock_minimum).first()
-    if ingredient:
-        stop_list = True
-        return stop_list, runing_out, need_to_sold
-    ingredient = db.query(Ingredient).filter(Ingredient.id.in_(ingredients_id),
-                                             Ingredient.amount >= Ingredient.stock_minimum,
-                                             Ingredient.amount <= Ingredient.min_acceptable).first()
-    if ingredient:
-        runing_out = True
-        return stop_list, runing_out, need_to_sold
-    ingredient = db.query(Ingredient).filter(Ingredient.id.in_(ingredients_id),
-                                             Ingredient.amount > Ingredient.stock_maximum).first()
-    if ingredient:
-        need_to_sold = True
-        return stop_list, runing_out, need_to_sold
-    return stop_list, runing_out, need_to_sold
+# @handle_errors
+# async def check_available_ing(ingredients_id: list[int], db: Session):
+#     time_start = time.time()
+#     logging.basicConfig(level=logging.INFO)
+#     need_to_sold = False
+#     runing_out = False
+#     stop_list = False
+#     ingredient = db.query(Ingredient).filter(Ingredient.id.in_(ingredients_id),
+#                                              Ingredient.amount < Ingredient.stock_minimum).first()
+#     if ingredient:
+#         stop_list = True
+#         return stop_list, runing_out, need_to_sold
+#     ingredient = db.query(Ingredient).filter(Ingredient.id.in_(ingredients_id),
+#                                              Ingredient.amount >= Ingredient.stock_minimum,
+#                                              Ingredient.amount <= Ingredient.min_acceptable).first()
+#     if ingredient:
+#         runing_out = True
+#         return stop_list, runing_out, need_to_sold
+#     ingredient = db.query(Ingredient).filter(Ingredient.id.in_(ingredients_id),
+#                                              Ingredient.amount > Ingredient.stock_maximum).first()
+#     if ingredient:
+#         need_to_sold = True
+#         return stop_list, runing_out, need_to_sold
+#     time_end = time.time()
+#     logger.info(f"check_available_ing - {time_end - time_start}")
+#     return stop_list, runing_out, need_to_sold
     
 
 @handle_errors
-async def update_stop_list(db: Session):
-    await repository_ing.update_ingerdients(db)
-    dishes = db.query(Dish).all()
-    for dish in dishes:
-        ingredients_id = await find_ingredients_id_of_dish(dish.id, db)
-        stop_list, runing_out, need_to_sold = await check_available_ing(ingredients_id, db)
-        dish.stop_list = stop_list
-        dish.runing_out = runing_out
-        dish.need_to_sold = need_to_sold
-        db.commit()
-        db.refresh(dish)
+async def get_updated_stop_list(data: dict, db: Session):
+
+    dishes_data = {}
+    for key, value in data.items():
+        d_m2m_i_list = db.query(Dish_M2M_Ingredients).filter(Dish_M2M_Ingredients.ingredient_id.in_(value)).all()
+        dishes_id = [d_m2m_i.dish_id for d_m2m_i in d_m2m_i_list]
+        dishes_data[key] = dishes_id
+
+    need_to_sold = set(dishes_data.get("need_to_sold"))
+    running_out = set(dishes_data.get("runing_out"))
+    ended = set(dishes_data.get("ended"))
+
+    need_to_sold = need_to_sold - ended - running_out
+    running_out = running_out - ended
+
+    need_to_sold = db.query(Dish).filter(Dish.id.in_(list(need_to_sold))).all()
+    running_out = db.query(Dish).filter(Dish.id.in_(list(running_out))).all()
+    ended = db.query(Dish).filter(Dish.id.in_(list(ended))).all()
+
+    for dish in ended:
+        dish.ended = True
+        dish.runing_out = False
+        dish.need_to_sold = False
+
+    for dish in running_out:
+        dish.ended = False
+        dish.runing_out = True
+        dish.need_to_sold = False
+
+    for dish in need_to_sold:
+        dish.ended = False
+        dish.runing_out = False
+        dish.need_to_sold = True
+    
+    db.commit()
+
+    stop_list = StopListModel(
+        ended=ended,
+        runing_out=running_out,
+        need_to_sold=need_to_sold
+    )
+
+    return stop_list
+
+
+    
+
+
+
+# @handle_errors
+# async def update_stop_list(db: Session):
+#     stop_list_data = await repository_ing.update_ingerdients(db)
+#     return await get_check_list(stop_list_data, db)
+#     # dishes = db.query(Dish).all()
+#     # for dish in dishes:
+#     #     ingredients_id = await find_ingredients_id_of_dish(dish.id, db)
+#     #     stop_list, runing_out, need_to_sold = await check_available_ing(ingredients_id, db)
+#     #     dish.stop_list = stop_list
+#     #     dish.runing_out = runing_out
+#     #     dish.need_to_sold = need_to_sold
+#     #     db.commit()
+#     #     db.refresh(dish)
             
 
 # async def check_dishes_for_stop_list(ingredient: Ingredient, db: Session):

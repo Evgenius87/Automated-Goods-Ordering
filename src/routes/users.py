@@ -1,15 +1,11 @@
-from dotenv import load_dotenv
-
-
-from fastapi import APIRouter, Depends, status, HTTPException, dependencies
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials, OAuth2PasswordRequestForm
+from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi.security import HTTPBearer
 from sqlalchemy.orm import Session
 
-from src.schemas import  OkResponseModel, UserResponseModel, UserModel
+from src.schemas import  OkResponseModel, UserResponseModel, UserUpdateModel
 from src.database.db_connection import get_db
 from src.repository import users as repository_users
 from src.database.models import User
-from src.schemas import UserModel, UserRegistrationBase, UserUpdateModel
 from src.services.auth import auth_service
 from src.services.roles import access_A, access_ABC, access_ABCU
 
@@ -18,8 +14,6 @@ from src.services.roles import access_A, access_ABC, access_ABCU
 router = APIRouter(prefix='/users', tags=["Users"])
 
 security = HTTPBearer()
-
-
 
 @router.get("/", response_model=list[UserResponseModel],
             dependencies=[Depends(access_A)],

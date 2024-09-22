@@ -129,7 +129,7 @@ class Auth:
         :param db: Session: Get the database session
         :return: The user object
         """
-        logger.info(f"token = {token}")
+        # logger.info(f"token = {token}")
         credentials_exception = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
@@ -165,7 +165,7 @@ class Auth:
             email = payload["sub"]
             return email
         except JWTError as e:
-            print(e)
+            # print(e)
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                                 detail="Invalid token for email verification")
         

@@ -1,7 +1,6 @@
-from typing import List
+import enum
 
 from enum import Enum
-import enum
 
 from sqlalchemy import Column, Integer,Float, String, Boolean, DateTime, func, Table, Enum, BIGINT
 from sqlalchemy.orm import relationship
@@ -9,8 +8,9 @@ from sqlalchemy.sql.schema import ForeignKey
 from sqlalchemy.sql.sqltypes import DateTime
 from sqlalchemy.ext.declarative import declarative_base
 
-Base = declarative_base()
 
+
+Base = declarative_base()
 
 
 dish_m2m_tag = Table(
@@ -63,7 +63,7 @@ class Dish(Base):
     dish_premixes = relationship("Dish_M2M_Premixes", back_populates="dish")
     comments = relationship('Comment', back_populates="dish")
     tags = relationship("Tag", secondary=dish_m2m_tag, back_populates="dishes")
-    stop_list = Column(Boolean)
+    ended = Column(Boolean)
     runing_out = Column(Boolean)
     need_to_sold = Column(Boolean)
     price = Column(Integer)
@@ -136,7 +136,6 @@ class Comment(Base):
 
 
 
-
 class Role(enum.Enum):
     __tablename__ = 'users_roles'
     admin: str = 'admin'
@@ -161,7 +160,7 @@ class User(Base):
     password = Column(String(255))
     secret_code = Column(String(255))
     created_at = Column('created_at', DateTime, default=func.now())
-    refresh_token = Column(String(255))
+    refresh_tokens = relationship('RefreshToken', back_populates='user')
     banned = Column(Boolean, default=False)
     role = Column('role', Enum(Role), default=Role.user)
     information = Column(String, nullable=True)
@@ -187,14 +186,17 @@ class Provider(Base):
     user = relationship("User", back_populates="provider")
 
 
-
 class Token(Base):
     __tablename__ = "token_black_list"
     access_token = Column(String(255), primary_key=True)
     created_at = Column('created_at', DateTime, default=func.now())
 
 
-
-
-
+class RefreshToken(Base):
+    __tablename__ = "refresh_tokens"
+    id = Column(Integer, primary_key=True)
+    token = Column(String(255), nullable=False)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    user = relationship('User', back_populates='refresh_tokens')
+    created_at = Column('created_at', DateTime, default=func.now())
 

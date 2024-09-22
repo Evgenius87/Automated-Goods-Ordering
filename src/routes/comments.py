@@ -1,14 +1,11 @@
-import uuid
-import io
-
-from fastapi import HTTPException,APIRouter, Depends, status, UploadFile, File, Form, Path
-from fastapi.security import OAuth2PasswordRequestForm, HTTPAuthorizationCredentials, HTTPBearer
+from fastapi import HTTPException,APIRouter, Depends, status
+from fastapi.security import HTTPBearer
 from sqlalchemy.orm import Session
 from PIL import Image
 
 from src.schemas import CommentResponeModel, CommentModel, CommentUpdateModel
 from src.database.db_connection import get_db
-from src.database.models import Dish, Category, User
+from src.database.models import User
 from src.repository import comments as repository_comments
 from src.services.roles import access_A, access_ABC, access_ABCU
 from src.services.auth import auth_service
@@ -33,6 +30,7 @@ async def get_comments(dish_id: int,
         )
     return comments
 
+
 @router.post('/create', response_model=CommentResponeModel, status_code=status.HTTP_201_CREATED)
 async def create_comment(body: CommentModel, db: Session = Depends(get_db),
                          current_user: User = Depends(auth_service.get_current_user)):
@@ -42,7 +40,6 @@ async def create_comment(body: CommentModel, db: Session = Depends(get_db),
     return comment
 
 
-
 @router.patch('/update', response_model=CommentResponeModel)
 async def update_comment(body: CommentUpdateModel, db: Session = Depends(get_db),
                          current_user: User = Depends(auth_service.get_current_user)):
@@ -50,7 +47,6 @@ async def update_comment(body: CommentUpdateModel, db: Session = Depends(get_db)
     if not comment:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Comments not found")
     return comment
-
 
 
 @router.delete('/del/{comment_id}')# dependencies=[Depends(access_AM)])

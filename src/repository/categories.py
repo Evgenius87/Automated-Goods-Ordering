@@ -1,8 +1,7 @@
-from fastapi import status, HTTPException
 from sqlalchemy.orm import Session
 
 from src.schemas import CategoryModel
-from src.database.models import Dish, Tag, Category, User
+from src.database.models import Category
 from src.services.handler_errors import handle_errors
 
 

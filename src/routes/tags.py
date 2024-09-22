@@ -1,20 +1,15 @@
-import uuid
-import io
-
-from fastapi import HTTPException,APIRouter, Depends, status, UploadFile, File, Form
+from fastapi import HTTPException,APIRouter, Depends, status
 from sqlalchemy.orm import Session
-from PIL import Image
 
-from src.schemas import TagResponseModel, OkResponseModel
+
+from src.schemas import TagResponseModel
 from src.database.db_connection import get_db
-from src.database.models import Dish, Category, Tag
-from src.repository import dishes, bot_contents, tags
-from src.services.images import image_cloudinary, resize_image
+from src.repository import tags
 from src.services.roles import access_A, access_ABC, access_ABCU
 
 
-router = APIRouter(prefix='/tags', tags=["Tags"])
 
+router = APIRouter(prefix='/tags', tags=["Tags"])
 
 @router.get("/", 
             dependencies=[Depends(access_ABCU)],
@@ -32,7 +27,7 @@ async def get_tags(db: Session = Depends(get_db)):
                dependencies=[Depends(access_A)],
                status_code=status.HTTP_204_NO_CONTENT)
 async def delete_tag(id: int, db: Session = Depends(get_db)):
-    return tags.delete_tag(id, db)
+    return await tags.delete_tag(id, db)
 
 
 # @router.delete("/delete_all", status_code=status.HTTP_204_NO_CONTENT)

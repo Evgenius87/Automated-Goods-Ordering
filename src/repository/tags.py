@@ -1,9 +1,6 @@
-from fastapi import status, HTTPException
 from sqlalchemy.orm import Session
 
-from src.schemas import DishModel
-from src.database.models import Dish, Tag, Category, User
-from src.services.images import image_cloudinary
+from src.database.models import Tag
 from src.services.handler_errors import handle_errors
 
 async def get_tags(db: Session) -> list[Tag]:

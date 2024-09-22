@@ -1,7 +1,3 @@
-from pprint import pprint
-
-from dotenv import load_dotenv
-
 from sqlalchemy.orm import Session
 from fastapi import APIRouter, Depends
 

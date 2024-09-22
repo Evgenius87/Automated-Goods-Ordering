@@ -5,11 +5,11 @@ from abc import ABC, abstractmethod
 from fastapi import Depends
 from sqlalchemy.orm import  Session
 
-from src.schemas import BotMessage, BotUpdateModel
-from src.database.models import Dish, Category, User, Role
+from src.schemas import BotUpdateModel
+from src.database.models import Role
 from src.database.db_connection import get_db
 from src.repository import bot_contents, providers
-# from src.services.chat_gpt import Gpt
+
 
 
 load_dotenv()
@@ -127,12 +127,6 @@ class UnknownCommand(AbstractHandler):
     async def handle_request(self, request: BotUpdateModel, db: Session = Depends(get_db)):
         if request:
             await bot_contents.send_home(request)
-        # if request.message.text:
-        #     content = request.message.text
-        #     # gpt = Gpt(content)
-        #     # message = gpt.get_answer()
-        #     # await bot_contents.send_message(request=request, message=content)
-        #     return await bot_contents.send_home(request)
         elif hasattr(self, "next_handler"):
             await self._next_handler.handle_request(request, db)
 

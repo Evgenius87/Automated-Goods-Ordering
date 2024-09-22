@@ -1,22 +1,15 @@
 import json
-import os
 
 from dotenv import load_dotenv
 from aiohttp import ClientSession
-from fastapi import FastAPI, Request, APIRouter
 from sqlalchemy.orm import Session
 
-
-from src.schemas import BotUpdateModel, DishResponseModel, DishM2MIngredients, DishM2MPremixes
+from src.schemas import BotUpdateModel, DishM2MIngredients, DishM2MPremixes
 from src.database.models import Dish, User
 
 
+
 load_dotenv()
-
-# TG_API = os.getenv("BOT_TOKEN")
-# SEND_MESSAGE_URL = os.getenv("SEND_MESSAGE_URL")
-# SEND_PHOTO_URL = os.getenv("SEND_PHOTO_URL")
-
 
 class TelegramBot:
 
@@ -34,8 +27,8 @@ class TelegramBot:
 
 
     async def send_bot_message(self, data: dict):
-        print(f"data = {data}")
-        print("bot/send_bot_message")
+        # print(f"data = {data}")
+        # print("bot/send_bot_message")
         async with ClientSession() as session:
             async with session.post(self.SEND_MESSAGE_URL, data=data) as response:
                 result = {'message': 'ok'}
@@ -69,7 +62,7 @@ class TelegramBot:
     async def make_bot_buttons(self, name_of_buttons: list, 
                                request: BotUpdateModel,
                                home=True):
-        print("bot/make_bot_buttons")
+        # print("bot/make_bot_buttons")
         chat_id = request.message.from_tg.chat_id
         text = "🇺🇦"
         buttons = []
@@ -79,7 +72,7 @@ class TelegramBot:
             buttons.append(n)
         if home:
             buttons.append(['home'])
-        print(f"Buttons = {buttons}")
+        # print(f"Buttons = {buttons}")
         reply_keyboard_marckup = {'keyboard': buttons}
         reply_keyboard_marckup_json = json.dumps(reply_keyboard_marckup)
         data = {
@@ -149,7 +142,7 @@ class TelegramBot:
 
 
     async def send_message(self, chat_id: int, message: str):
-        print(f"send message: {message}")
+        # print(f"send message: {message}")
         data = {
             'chat_id': chat_id,
             'text': message
@@ -160,7 +153,7 @@ class TelegramBot:
     async def send_message_to_reply(self, chat_id: int, message: str, placeholder: str):
         force_reply = {"force_reply": True, "input_field_placeholder": placeholder, "selective": True}
         force_reply_json = json.dumps(force_reply)
-        print("bot/send_message_to_reply")
+        # print("bot/send_message_to_reply")
         data = {
             'chat_id': chat_id,
             'text': message,

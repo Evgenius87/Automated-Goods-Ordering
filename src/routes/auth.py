@@ -2,8 +2,7 @@ import logging
 
 from random import randint
 
-from dotenv import load_dotenv
-from fastapi import APIRouter, Depends, status, HTTPException, Security, BackgroundTasks, Request, Response
+from fastapi import APIRouter, Depends, status, HTTPException, Security, BackgroundTasks, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials, OAuth2PasswordRequestForm
 from fastapi.responses import JSONResponse
 from starlette.responses import RedirectResponse
@@ -11,10 +10,10 @@ from sqlalchemy.orm import Session
 from google.oauth2 import id_token
 from google.auth.transport import requests
 
-from src.schemas import UserRegistrationBase, TokenModel, AuthCodeModel, OkResponseModel, GoogleAuthResp
+from src.schemas import UserRegistrationBase, TokenModel, OkResponseModel, GoogleAuthResp
 from src.database.db_connection import get_db
 from src.repository import users as repository_users
-from src.database.models import User, Token
+from src.database.models import User, Token, RefreshToken
 from src.services.auth import auth_service
 from src.services.email import send_email
 from src.schemas import TokenModel, RequestEmail
@@ -75,8 +74,6 @@ async def google_auth(request: Request,
     return {"access_token": access_token, "refresh_token": refresh_token, "token_type": "bearer"}
 
 
-
-
 @router.post("/signup", response_model=OkResponseModel, status_code=status.HTTP_201_CREATED)
 async def signup(body: UserRegistrationBase,
                  request: Request,
@@ -119,19 +116,20 @@ async def logout(token_data: Token = Depends(auth_service.oauth2_scheme),
 
 
 @router.get('/refresh_token', response_model=TokenModel)
-async def refresh_token(credentials: HTTPAuthorizationCredentials = Security(security), 
+async def refresh_token(credentials: HTTPAuthorizationCredentials = Security(security),
                         db: Session = Depends(get_db)) -> dict | HTTPException:
     token = credentials.credentials
-    print(token)
+    # print(token)
     email = await auth_service.decode_refresh_token(token)
     user = await repository_users.get_user_by_email(email, db)
-    if user.refresh_token != token:
-        await repository_users.update_token(user, None, db)
+    refresh_tokens = [i.token for i in db.query(RefreshToken).filter(RefreshToken.user_id==user.id).all()]
+    if token not in refresh_tokens:
         raise CREDENTIALS_EXCEPTION
     
     access_token = await auth_service.create_access_token(data={"sub": email})
     refresh_token = await auth_service.create_refresh_token(data={"sub": email})
     await repository_users.update_token(user, refresh_token, db)
+    await repository_users.delete_refresh_token(token, db)
     return {"access_token": access_token, "refresh_token": refresh_token, "token_type": "bearer"}
 
 
