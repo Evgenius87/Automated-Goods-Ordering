@@ -17,3 +17,4 @@ bcrypt
 authlib
 google-api-python-client
 itsdangerous
+httpx
