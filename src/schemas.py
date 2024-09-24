@@ -365,7 +365,7 @@ class UserResponseModel(BaseModel):
     role: Role = Field()
     forward_provider_message: Optional[bool]
     created_at: datetime
-    updated_at: Optional[datetime] = Any
+
 
     class Config:
         orm_mode = True
