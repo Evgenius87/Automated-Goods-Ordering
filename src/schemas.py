@@ -435,7 +435,7 @@ class GoogleAuthResp(BaseModel):
     iat: Optional[int]
     iss: Optional[str]
     name: Optional[str]
-    nonce: Optional[str]
+    nonce: Optional[str] = None
     picture: Optional[str]
     sub: Optional[str]
 
