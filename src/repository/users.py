@@ -33,6 +33,8 @@ async def patch_user(body: UserResponseModel, db: Session):
         user.information = body.information
     if body.forward_provider_message:
         user.forward_provider_message = body.forward_provider_message
+    if body.role:
+        user.role = body.role
 
     db.commit()
 

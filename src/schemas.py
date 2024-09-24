@@ -364,21 +364,23 @@ class UserResponseModel(BaseModel):
     phone: Optional[str] = None
     role: Role = Field()
     forward_provider_message: Optional[bool]
+    created_at: datetime
+    updated_at: Optional[datetime] = Any
 
     class Config:
         orm_mode = True
         from_attributes = True
 
-class UserModel(BaseModel):
-    username: str
-    first_name: str
-    last_name: str
-    phone: str
-    email: str
-    role: Role = Field()
-    information: str
-    password: str
-    refresh_token: str
+# class UserModel(BaseModel):
+#     username: str
+#     first_name: str
+#     last_name: str
+#     phone: str
+#     email: str
+#     role: Role = Field()
+#     information: str
+#     password: str
+#     refresh_token: str
     
     class Config:
         orm_mode = True

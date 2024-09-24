@@ -160,13 +160,13 @@ class User(Base):
     password = Column(String(255))
     secret_code = Column(String(255))
     created_at = Column('created_at', DateTime, default=func.now())
-    refresh_tokens = relationship('RefreshToken', back_populates='user')
+    refresh_tokens = relationship('RefreshToken', back_populates='user', cascade='all, delete-orphan')
     banned = Column(Boolean, default=False)
     role = Column('role', Enum(Role), default=Role.user)
     information = Column(String, nullable=True)
-    comments = relationship('Comment', back_populates='user')
+    comments = relationship('Comment', back_populates='user', cascade='all, delete-orphan')
     forward_provider_message = Column(Boolean, default=False)
-    provider = relationship("Provider", back_populates="user")
+    provider = relationship("Provider", back_populates="user", cascade='all, delete-orphan')
 
 
 class Provider(Base):
