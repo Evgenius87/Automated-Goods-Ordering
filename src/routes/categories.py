@@ -2,7 +2,7 @@
 from fastapi import  APIRouter, Depends, status, HTTPException
 from sqlalchemy.orm import Session
 
-from src.schemas import CategoryModel, GetChildRequest, DishResponseModel, CategoryResponseModel
+from src.schemas import CategoryModel, GetChildRequest, DishResponseModel, CategoryResponseModel, CategoryHomeModel
 from src.database.db_connection import get_db
 from src.repository import categories
 from src.database.models import Category

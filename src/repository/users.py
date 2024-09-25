@@ -33,6 +33,8 @@ async def patch_user(body: UserResponseModel, db: Session):
         user.information = body.information
     if body.forward_provider_message:
         user.forward_provider_message = body.forward_provider_message
+    if body.role:
+        user.role = body.role
 
     db.commit()
 
@@ -122,7 +124,7 @@ async def delete_refresh_token(refresh_token: str, db: Session):
 
 async def add_token_to_blacklist(token: str, db: Session):
     
-    token = Token(access_token=token)
+    token = Token(refresh_token=token)
     db.add(token)
     db.commit()
 

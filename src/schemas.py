@@ -364,21 +364,23 @@ class UserResponseModel(BaseModel):
     phone: Optional[str] = None
     role: Role = Field()
     forward_provider_message: Optional[bool]
+    created_at: datetime
+
 
     class Config:
         orm_mode = True
         from_attributes = True
 
-class UserModel(BaseModel):
-    username: str
-    first_name: str
-    last_name: str
-    phone: str
-    email: str
-    role: Role = Field()
-    information: str
-    password: str
-    refresh_token: str
+# class UserModel(BaseModel):
+#     username: str
+#     first_name: str
+#     last_name: str
+#     phone: str
+#     email: str
+#     role: Role = Field()
+#     information: str
+#     password: str
+#     refresh_token: str
     
     class Config:
         orm_mode = True
@@ -435,7 +437,7 @@ class GoogleAuthResp(BaseModel):
     iat: Optional[int]
     iss: Optional[str]
     name: Optional[str]
-    nonce: Optional[str]
+    nonce: Optional[str] = None
     picture: Optional[str]
     sub: Optional[str]
 
