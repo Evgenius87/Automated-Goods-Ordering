@@ -115,11 +115,14 @@ async def logout(token_data: Token = Depends(auth_service.oauth2_scheme),
     return JSONResponse(content={"message": "Successfully logged out"})
 
 
+
 @router.get('/refresh_token', response_model=TokenModel)
 async def refresh_token(credentials: HTTPAuthorizationCredentials = Security(security),
                         db: Session = Depends(get_db)) -> dict | HTTPException:
     token = credentials.credentials
-    # print(token)
+    black_list = [i.refresh_token for i in db.query(Token).filter(Token.refresh_token==token).all()]
+    if token in black_list:
+        raise CREDENTIALS_EXCEPTION
     email = await auth_service.decode_refresh_token(token)
     user = await repository_users.get_user_by_email(email, db)
     refresh_tokens = [i.token for i in db.query(RefreshToken).filter(RefreshToken.user_id==user.id).all()]

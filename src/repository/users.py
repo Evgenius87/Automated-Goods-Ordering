@@ -124,7 +124,7 @@ async def delete_refresh_token(refresh_token: str, db: Session):
 
 async def add_token_to_blacklist(token: str, db: Session):
     
-    token = Token(access_token=token)
+    token = Token(refresh_token=token)
     db.add(token)
     db.commit()
 
