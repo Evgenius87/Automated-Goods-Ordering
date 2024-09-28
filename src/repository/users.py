@@ -83,7 +83,7 @@ async def create_user_by_google_cred(data: GoogleAuthResp, db: Session, bot_auth
         first_name = data.given_name,
         last_name = data.family_name,
         email = data.email,
-        secret_code = hash_code
+        secret_code = hash_code,
         confirmed = True
     )
     if not users:
