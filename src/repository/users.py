@@ -129,3 +129,11 @@ async def add_token_to_blacklist(token: str, db: Session):
     db.commit()
 
     return True
+
+
+async def confirmed_email(email: str, db: Session):
+    user = await get_user_by_email(email, db)
+    user.confirmed = True
+    db.commit()
+
+    return True

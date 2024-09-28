@@ -157,6 +157,7 @@ class User(Base):
     chat_id = Column(BIGINT, unique=True)
     phone = Column(String(20))
     email = Column(String(100))
+    confirmed = Column(Boolean, default=False)
     password = Column(String(255))
     secret_code = Column(String(255))
     created_at = Column('created_at', DateTime, default=func.now())

@@ -97,6 +97,8 @@ async def logiin(body: OAuth2PasswordRequestForm = Depends(), db: Session = Depe
     user = await repository_users.get_user_by_email(body.username, db)
     if user is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email")
+    if not user.confirmed:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Email not confirmed")
     if not auth_service.verify_password(body.password, user.password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid password")
     if user.banned:
@@ -138,16 +140,17 @@ async def refresh_token(credentials: HTTPAuthorizationCredentials = Security(sec
 
 @router.get('/confirmed_email/{token}')
 async def confirmed_email(token: str, db: Session = Depends(get_db)):
+    home_page = settings.home_page
     email = await auth_service.get_email_from_token(token)
     user = await repository_users.get_user_by_email(email, db)
     if user is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Verification error")
-    home_page = settings.home_page
-    return RedirectResponse(home_page)
-    # if user.confirmed:
-    #     return {"message": "Your email is already confirmed"}
-    # await repository_users.confirmed_email(email, db)
+    if user.confirmed:
+        return {"message": "Your email is already confirmed"}
+    await repository_users.confirmed_email(email, db)
     # return {"message": "Email confirmed"}
+    
+    return RedirectResponse(home_page)
 
 
 @router.post('/request_email')
