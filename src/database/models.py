@@ -52,6 +52,19 @@ class Premix_M2M_Ingredient(Base):
     ingredient = relationship("Ingredient", back_populates="ingredient_premixes")
 
 
+class Premix_M2M_Premix(Base):
+    __tablename__ = 'premix_m2m_premix'
+    id = Column(Integer, primary_key=True)
+    parent_premix_id = Column(Integer, ForeignKey('premixes.id', ondelete="CASCADE"))
+    child_premix_id = Column(Integer, ForeignKey('premixes.id', ondelete="CASCADE"))
+    quantity = Column(Float, nullable=False)
+    parent_premix = relationship("Premix", foreign_keys=[parent_premix_id], back_populates="premix_children")
+    child_premix = relationship("Premix", foreign_keys=[child_premix_id], back_populates="premix_parents")
+
+
+
+
+
 class Dish(Base):
     __tablename__ = "dishes"
     id = Column(Integer, primary_key=True)
@@ -101,6 +114,8 @@ class Premix(Base):
     premix_dishes = relationship("Dish_M2M_Premixes", back_populates="premix")
     premix_ingredients = relationship("Premix_M2M_Ingredient", back_populates="premix")
     description = Column(String(900))
+    premix_children = relationship("Premix_M2M_Premix", foreign_keys=[Premix_M2M_Premix.parent_premix_id], back_populates="parent_premix", cascade="all, delete-orphan")
+    premix_parents = relationship("Premix_M2M_Premix", foreign_keys=[Premix_M2M_Premix.child_premix_id], back_populates="child_premix")
     created_at = Column("created_at", DateTime, default=func.now())
     updated_at = Column("updated_at", DateTime, onupdate=func.now())
 

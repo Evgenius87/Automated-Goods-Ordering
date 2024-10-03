@@ -70,8 +70,8 @@ class KeyboardButton(BaseModel):
 ##############################################
     
 class TagResponseModel(BaseModel):
-    id: int
-    name_tag: str
+    id: Optional[int] = None
+    name_tag: Optional[str] = None
 
     class Config:
         orm_mode = True
@@ -162,13 +162,42 @@ class DishM2MIngredients(BaseModel):
 
 
 
-#######################################33
+#######################################
+class PremixToPremixModel(BaseModel):
+    id: int
+    quantity: float
+
+    class Config:
+        orm_mode = True
+        from_attributes = True
+
 
 class PremixModel(BaseModel):
     name: str
-    ingredients: list[IngredientModel]
+    ingredients: Optional[list[IngredientModel]] = None
+    child_premixes: Optional[list[PremixToPremixModel]] = None
     description: str
+
     
+class ChildPremixResponseModel(BaseModel):
+    id: int
+    name: str
+    description: str
+
+    class Config:
+        orm_mode = True
+        from_attributes = True
+
+
+class PremixM2MPremix(BaseModel):
+    child_premix_id: Optional[int] = None
+    quantity: Optional[float] = None
+    child_premix: Optional[ChildPremixResponseModel] = None
+
+    class Config:
+        orm_mode = True
+        from_attributes = True
+
 
 class PremixM2MIngredients(BaseModel):
     ingredient_id: int
@@ -181,11 +210,11 @@ class PremixM2MIngredients(BaseModel):
 
 
 
-
 class PremixResponseModel(BaseModel):
     id: int
     name: str
-    premix_ingredients: list[PremixM2MIngredients]
+    premix_ingredients: Optional[list[PremixM2MIngredients]] = None
+    premix_children: Optional[list[PremixM2MPremix]] = None
     description: str
 
     class Config:
@@ -196,7 +225,8 @@ class PremixResponseModel(BaseModel):
 class UpdatePremixModel(BaseModel):
     id: int
     name: Optional[str]
-    ingredients: Optional[list[IngredientModel]]
+    ingredients: Optional[list[IngredientModel]] = None
+    child_premixes: Optional[list[PremixToPremixModel]] = None
     description: Optional[str]
 
 
@@ -238,12 +268,12 @@ class DishResponseModel(BaseModel):
     dish_name: str
     description: Any
     dish_ingredients: Optional[list[DishM2MIngredients]]
-    dish_premixes: Optional[list[DishM2MPremixes]] = Any
-    tags: Optional[list[TagResponseModel]] = Any
+    dish_premixes: Optional[list[DishM2MPremixes]] = None
+    tags: Optional[list[TagResponseModel]] = None
     ended: Any
     runing_out: Any
     need_to_sold: Any
-    price: int
+    price: Optional[int]
     category_name: str = None
     category_id: Optional[int] = None
     created_at: datetime

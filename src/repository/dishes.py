@@ -149,46 +149,6 @@ async def delete_dish(dish_id: int, db: Session):
     return{"message": "The Dish is correctly deleted"}
 
 
-# @handle_errors
-# async def find_ingredients_id_of_dish(dish_id: int, db: Session):
-#     time_start = time.time()
-#     logging.basicConfig(level=logging.INFO)
-#     d_m2m_i_list = db.query(Dish_M2M_Ingredients).filter(Dish_M2M_Ingredients.dish_id == dish_id).all()
-#     ingredients_id = [d_m2m_i.ingredient_id for d_m2m_i in d_m2m_i_list]
-#     ingredients_id = list(set(ingredients_id))
-#     time_end = time.time()
-#     logger.info(f"find_ingredients_id_of_dish - {time_end - time_start}")
-#     return ingredients_id
-
-
-# @handle_errors
-# async def check_available_ing(ingredients_id: list[int], db: Session):
-#     time_start = time.time()
-#     logging.basicConfig(level=logging.INFO)
-#     need_to_sold = False
-#     runing_out = False
-#     stop_list = False
-#     ingredient = db.query(Ingredient).filter(Ingredient.id.in_(ingredients_id),
-#                                              Ingredient.amount < Ingredient.stock_minimum).first()
-#     if ingredient:
-#         stop_list = True
-#         return stop_list, runing_out, need_to_sold
-#     ingredient = db.query(Ingredient).filter(Ingredient.id.in_(ingredients_id),
-#                                              Ingredient.amount >= Ingredient.stock_minimum,
-#                                              Ingredient.amount <= Ingredient.min_acceptable).first()
-#     if ingredient:
-#         runing_out = True
-#         return stop_list, runing_out, need_to_sold
-#     ingredient = db.query(Ingredient).filter(Ingredient.id.in_(ingredients_id),
-#                                              Ingredient.amount > Ingredient.stock_maximum).first()
-#     if ingredient:
-#         need_to_sold = True
-#         return stop_list, runing_out, need_to_sold
-#     time_end = time.time()
-#     logger.info(f"check_available_ing - {time_end - time_start}")
-#     return stop_list, runing_out, need_to_sold
-    
-
 @handle_errors
 async def get_updated_stop_list(data: dict, db: Session):
 
@@ -234,46 +194,3 @@ async def get_updated_stop_list(data: dict, db: Session):
 
     return stop_list
 
-
-    
-
-
-
-# @handle_errors
-# async def update_stop_list(db: Session):
-#     stop_list_data = await repository_ing.update_ingerdients(db)
-#     return await get_check_list(stop_list_data, db)
-#     # dishes = db.query(Dish).all()
-#     # for dish in dishes:
-#     #     ingredients_id = await find_ingredients_id_of_dish(dish.id, db)
-#     #     stop_list, runing_out, need_to_sold = await check_available_ing(ingredients_id, db)
-#     #     dish.stop_list = stop_list
-#     #     dish.runing_out = runing_out
-#     #     dish.need_to_sold = need_to_sold
-#     #     db.commit()
-#     #     db.refresh(dish)
-            
-
-# async def check_dishes_for_stop_list(ingredient: Ingredient, db: Session):
-#     need_to_sold = False
-#     runing_out = False
-#     stop_list = False
-#     if ingredient.min_acceptable > ingredient.amount:
-#         stop_list = True
-#     elif ingredient.min_acceptable < ingredient.amount and ingredient.amount < ingredient.stock_minimum:
-#         runing_out = True
-#     elif ingredient.amount > ingredient.stock_maximum:
-#         need_to_sold = True
-#     d_m2m_i_list = db.query(Dish_M2M_Ingredients).filter(Dish_M2M_Ingredients.ingredient_id == ingredient.id).all()
-#     dishes_id = [d_m2m_i.dish_id for d_m2m_i in d_m2m_i_list]
-#     print(dishes_id)
-#     for dish_id in dishes_id:
-#         dish = await get_dish(dish_id, db)
-#         dish: Dish
-#         print(dish.dish_name)
-#         print(dish.need_to_sold)
-#         dish.need_to_sold = need_to_sold
-#         dish.runing_out = runing_out
-#         dish.stop_list = stop_list
-#         db.commit()
-#         db.refresh(dish)
