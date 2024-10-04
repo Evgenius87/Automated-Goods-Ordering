@@ -22,7 +22,8 @@ from src.routes import (bot_actions,
                         comments,
                         providers, 
                         stop_list,
-                        auth)
+                        auth, 
+                        preorders)
 
 
 
@@ -73,6 +74,7 @@ app.include_router(premixes.router, prefix="/api")
 app.include_router(categories.router, prefix='/api')
 app.include_router(tags.router, prefix="/api")
 app.include_router(comments.router, prefix="/api")
+app.include_router(preorders.router, prefix="/api")
 app.include_router(providers.router, prefix="/api")
 app.include_router(stop_list.router, prefix="/api")
 

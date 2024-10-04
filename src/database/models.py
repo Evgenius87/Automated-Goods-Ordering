@@ -62,6 +62,16 @@ class Premix_M2M_Premix(Base):
     child_premix = relationship("Premix", foreign_keys=[child_premix_id], back_populates="premix_parents")
 
 
+class PreOrder_M2M_Dish(Base):
+    __tablename__ = "pre_order_m2m_dish"
+    id = Column(Integer, primary_key=True)
+    pre_order_id = Column(Integer, ForeignKey("pre_orders.id", ondelete="CASCADE"))
+    dish_id = Column(Integer, ForeignKey("dishes.id", ondelete="CASCADE"))
+    quantity = Column(Float)
+    pre_order = relationship("PreOrder", back_populates="order_dishes")
+    dish = relationship("Dish", back_populates="dish_pre_order")
+
+
 
 
 
@@ -76,6 +86,7 @@ class Dish(Base):
     dish_premixes = relationship("Dish_M2M_Premixes", back_populates="dish")
     comments = relationship('Comment', back_populates="dish")
     tags = relationship("Tag", secondary=dish_m2m_tag, back_populates="dishes")
+    dish_pre_order = relationship("PreOrder_M2M_Dish", back_populates="dish")
     ended = Column(Boolean)
     runing_out = Column(Boolean)
     need_to_sold = Column(Boolean)
@@ -148,6 +159,25 @@ class Comment(Base):
     dish = relationship("Dish", back_populates="comments")
     created_at = Column("created_at", DateTime, default=func.now())
     updated_at = Column("updated_at", DateTime, default=func.now(), onupdate=func.now())
+
+
+
+class PreOrder(Base):
+    __tablename__ = "pre_orders"
+    id = Column(Integer, primary_key=True)
+    date = Column(DateTime, nullable=False)
+    time = Column(DateTime, nullable=False)
+    name = Column(String(100), nullable=False)
+    phone = Column(String(100), nullable=False)
+    table = Column(String(100), nullable=False)
+    guest_counter = Column(Integer)
+    order_dishes = relationship("PreOrder_M2M_Dish", back_populates="pre_order")
+    description = Column(String(500), nullable=False)
+    price = Column(Float)
+    discount = Column(Integer)
+    created_at = Column("created_at", DateTime, default=func.now())
+    updated_at = Column("updated_at", DateTime, onupdate=func.now())
+
 
 
 

@@ -296,7 +296,69 @@ class UpdateDishModel(BaseModel):
     price: Optional[int] = None
 
 
-#################################33########
+class ShortDishModel(BaseModel):
+    dish_name: str
+    image_url: Any
+    ended: Any
+    runing_out: Any
+    need_to_sold: Any
+    price: Optional[int]
+    category_id: Optional[int] = None
+
+############################################
+
+class PreOrderM2MDish(BaseModel):
+    dish_id: int
+    quantity: float
+    dish: ShortDishModel
+
+
+class PreOrderDish(BaseModel):
+    id: int
+    quantity: float
+
+
+class PreOrderModel(BaseModel):
+    date: Optional[datetime] = Any
+    time: Optional[datetime] = Any
+    name: str
+    phone: str
+    table: str
+    guest_counter: int
+    order_dishes: Optional[list[PreOrderDish]] = None
+    description: str
+    price: float
+    discount: int
+
+
+    class Config:
+        orm_mode = True
+        from_attributes = True
+
+
+class PreOrderResponse(BaseModel):
+    id: int
+    date: Optional[datetime] = Any
+    time: Optional[datetime] = Any
+    name: str
+    phone: str
+    table: str
+    guest_counter: int
+    order_dishes: Optional[list[PreOrderM2MDish]] = None
+    description: str
+    price: float
+    discount: int
+    created_at: datetime
+    updated_at: Optional[datetime] = Any
+
+
+    class Config:
+        orm_mode = True
+        from_attributes = True
+
+
+
+############################################
 
 class OkResponseModel(BaseModel):
     message: str
