@@ -341,20 +341,38 @@ class PreOrderResponse(BaseModel):
     date: Optional[datetime] = Any
     time: Optional[datetime] = Any
     name: str
-    phone: str
+    phone: str = None
     table: str
     guest_counter: int
     order_dishes: Optional[list[PreOrderM2MDish]] = None
-    description: str
-    price: float
-    discount: int
+    description: str = None
+    price: float = None
+    discount: int = None
     created_at: datetime
     updated_at: Optional[datetime] = Any
-
 
     class Config:
         orm_mode = True
         from_attributes = True
+
+
+class PreOrderUpdate(BaseModel):
+    id: int
+    date: Optional[datetime] = Any
+    time: Optional[datetime] = Any
+    name: Optional[str]
+    phone: Optional[str]
+    table: Optional[str]
+    guest_counter: Optional[int]
+    order_dishes: Optional[list[PreOrderDish]] = None
+    description: Optional[str]
+    price: Optional[float]
+    discount: Optional[int]
+
+    class Config:
+        orm_mode = True
+        from_attributes = True
+
 
 
 
